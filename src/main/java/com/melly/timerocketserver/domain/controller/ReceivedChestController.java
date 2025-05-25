@@ -27,8 +27,8 @@ public class ReceivedChestController implements ResponseController {
 
     // 회원별 보관함 로켓 조회
     @GetMapping()
-    public ResponseEntity<ResponseDto> getChestList(@RequestParam(required = false, defaultValue = "self") String receiverType,
-                                                    @RequestParam(name="rocket-name", required = false, defaultValue = "") String rocketName,
+    public ResponseEntity<ResponseDto> getChestList(@RequestParam(defaultValue = "self") String receiverType,
+                                                    @RequestParam(name="rocket-name", defaultValue = "") String rocketName,
                                                     @RequestParam(defaultValue = "1") int page,
                                                     @RequestParam(defaultValue = "10") int size,
                                                     @RequestParam(defaultValue = "receivedChestId") String sort,
@@ -43,7 +43,7 @@ public class ReceivedChestController implements ResponseController {
 
         ReceivedChestPageResponse chestList = receivedChestService.getReceivedChestList(getUserId(), rocketName, pageable, receiverType);
 
-        return makeResponseEntity(HttpStatus.OK, "보관함에 저장된 로켓 목록을 불러왔습니다.", chestList);
+        return makeResponseEntity(HttpStatus.OK, "수신 보관함에 저장된 로켓 목록을 불러왔습니다.", chestList);
     }
 
     // 보관함 로켓 상세 조회

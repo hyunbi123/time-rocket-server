@@ -31,10 +31,6 @@ public class ReceivedChestService {
     public ReceivedChestPageResponse getReceivedChestList(Long userId, String rocketName, Pageable pageable, String receiverType) {
         Page<ReceivedChestEntity> findEntity;
 
-        if (receiverType == null || receiverType.isBlank()) {
-            throw new IllegalArgumentException("receiverType 은 필수입니다.");
-        }
-
         if (!receiverType.equals("self") && !receiverType.equals("other") && !receiverType.equals("group")) {
             throw new IllegalArgumentException("receiverType 은 'self', 'other', 'group' 중 하나여야 합니다.");
         }
