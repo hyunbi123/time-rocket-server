@@ -47,8 +47,7 @@ public class FileController {
     // filename → ASCII 전용 Fallback (Postman 이나 일부 클라이언트용)
     // filename* → UTF-8 인코딩 (최신 브라우저 대응)
     private String safeAsciiFallback(String originalName) {
-        // 허용할 문자 : 알파벳 대소문자, 숫자, 공백, 하이픈, 언더스코어, 점 등
-        // 그 외 문자는 _ 로 대체
-        return originalName.replaceAll("[^a-zA-Z0-9 \\-_.\uAC00-\uD7AF]", "_");
+        // 알파벳, 숫자, 공백, 하이픈, 밑줄, 점만 허용 (한글 제외)
+        return originalName.replaceAll("[^a-zA-Z0-9 \\-_.]", "_");
     }
 }
