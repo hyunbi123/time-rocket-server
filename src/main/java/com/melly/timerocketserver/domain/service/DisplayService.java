@@ -48,7 +48,7 @@ public class DisplayService {
 
         // 비어 있으면 404 에러 발생
         if (chestEntities == null || chestEntities.isEmpty()) {
-            throw new DisplayNotFoundException("해당 회원의 진열장이 존재하지 않습니다.");
+            throw new DisplayNotFoundException("본인 진열장에 해당 로켓이 존재하지 않거나 삭제된 상태입니다.");
         }
 
         // Entity → DTO 변환
@@ -81,8 +81,8 @@ public class DisplayService {
         log.info("Redis 캐시를 갱신했습니다.");
     }
 
-    public DisplayDetailResponse getDisplayDetail(Long userId, Long chestId) {
-        ReceivedChestEntity findEntity = receivedChestRepository.findByReceivedChestIdAndIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(chestId, userId)
+    public DisplayDetailResponse getDisplayDetail(Long userId, Long receivedChestId) {
+        ReceivedChestEntity findEntity = receivedChestRepository.findByReceivedChestIdAndIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(receivedChestId, userId)
                 .orElseThrow(()-> new ChestNotFoundException("본인 진열장에 해당 로켓이 존재하지 않거나 삭제된 상태입니다."));
         RocketEntity rocket = findEntity.getRocket();
         return DisplayDetailResponse.builder()
@@ -92,7 +92,6 @@ public class DisplayService {
                 .senderEmail(findEntity.getRocket().getSenderUser().getEmail())
                 .sentAt(findEntity.getRocket().getSentAt())
                 .content(findEntity.getRocket().getContent())
-                .isLocked(findEntity.getRocket().getIsLock())
                 .rocketFiles(toRocketFileResponseList(rocket.getRocketFiles()))
                 .build();
     }

@@ -28,12 +28,12 @@ public class DisplayController implements ResponseController {
     @GetMapping()
     public ResponseEntity<ResponseDto> getDisplayList() {
         List<DisplayDto> displayList = displayService.getDisplayList(getUserId());
-        return makeResponseEntity(HttpStatus.OK, "진열장 조회 성공", displayList);
+        return makeResponseEntity(HttpStatus.OK, "진열장에 저장된 로켓 조회 성공", displayList);
     }
 
-    @GetMapping("/{chestId}")
-    public ResponseEntity<ResponseDto> getDisplayDetail(@PathVariable @Min(value = 1, message = "chestId는 1 이상이어야 합니다.") Long chestId){
-        DisplayDetailResponse displayDetail = displayService.getDisplayDetail(getUserId(), chestId);
+    @GetMapping("/{receivedChestId}")
+    public ResponseEntity<ResponseDto> getDisplayDetail(@PathVariable @Min(value = 1, message = "chestId는 1 이상이어야 합니다.") Long receivedChestId){
+        DisplayDetailResponse displayDetail = displayService.getDisplayDetail(getUserId(), receivedChestId);
         return makeResponseEntity(HttpStatus.OK, "진열장의 로켓 상세 정보를 불러왔습니다.", displayDetail);
     }
 

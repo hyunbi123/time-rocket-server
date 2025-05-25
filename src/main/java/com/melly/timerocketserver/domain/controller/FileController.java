@@ -25,7 +25,7 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @GetMapping("/download/{fileId}")   // 파일 다운로드 API, HTTP 헤더와 바이너리 데이터 직접 반환, 즉 Json 응답이 아니라 공통응답 API 상속불가
+    @GetMapping("/{fileId}/download")   // 파일 다운로드 API, HTTP 헤더와 바이너리 데이터 직접 반환, 즉 Json 응답이 아니라 공통응답 API 상속불가
     public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) throws IOException {
         // 서비스에서 리소스와 원본파일명 같이 받음
         FileDownloadDto fileDownloadDto = fileService.loadFileAsResource(fileId);

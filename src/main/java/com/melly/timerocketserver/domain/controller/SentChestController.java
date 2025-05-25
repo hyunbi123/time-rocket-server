@@ -28,11 +28,11 @@ public class SentChestController implements ResponseController {
     }
 
     @GetMapping("")
-    public ResponseEntity<ResponseDto> getSentChestList(@RequestParam(name = "rocket-name", required = false, defaultValue = "") String rocketName,
-                                                        @RequestParam(defaultValue = "1") int page,
+    public ResponseEntity<ResponseDto> getSentChestList(@RequestParam(defaultValue = "1") int page,
                                                         @RequestParam(defaultValue = "10") int size,
                                                         @RequestParam(defaultValue = "sentChestId") String sort,
-                                                        @RequestParam(defaultValue = "desc") String order){
+                                                        @RequestParam(defaultValue = "desc") String order,
+                                                        @RequestParam(name = "rocket-name", defaultValue = "") String rocketName){
         // 음수 혹은 0 페이지 방지 (최소 1 페이지부터 시작, 음수를 넣어도 1부터 시작)
         page = Math.max(page, 1);
         size = Math.max(size, 1);
