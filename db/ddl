@@ -63,6 +63,23 @@ CREATE TABLE `group_member_tbl` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
+CREATE TABLE `group_rocket_content_tbl` (
+  `grc_id` bigint NOT NULL AUTO_INCREMENT,
+  `rocket_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `is_deleted` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`grc_id`),
+  KEY `fk_grc_rocket` (`rocket_id`),
+  KEY `fk_grc_user` (`user_id`),
+  CONSTRAINT `fk_grc_rocket` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_grc_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
 
 CREATE TABLE `rocket_tbl` (
   `rocket_id` bigint NOT NULL AUTO_INCREMENT,
@@ -92,6 +109,7 @@ CREATE TABLE `rocket_tbl` (
 CREATE TABLE `rocket_file_tbl` (
   `file_id` bigint NOT NULL AUTO_INCREMENT,
   `rocket_id` bigint NOT NULL,
+  `grc_id` bigint DEFAULT NULL,
   `original_name` varchar(255) DEFAULT NULL,
   `unique_name` varchar(255) DEFAULT NULL,
   `saved_path` varchar(500) DEFAULT NULL,
