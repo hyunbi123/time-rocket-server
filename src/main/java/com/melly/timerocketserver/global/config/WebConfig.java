@@ -12,6 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         // 외부 디렉토리 매핑
         registry.addResourceHandler("/images/**") // URL 패턴 설정
                 .addResourceLocations("file:///C:/time_rocket/images/rocket_design") // 외부 디렉토리 경로 매핑
-                .addResourceLocations("file:///C:/time_rocket/images/rocket_file");
+                .addResourceLocations("file:///C:/time_rocket/images/rocket_file")
+                .addResourceLocations("file:///C:/time_rocket/images/background_image");
     }
 }
