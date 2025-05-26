@@ -28,6 +28,9 @@ public class GroupEntity {
     @JoinColumn(name = "leader_id")
     private UserEntity leader;
 
+    @Column(name = "member_limit")
+    private Integer memberLimit;
+
     @Column(name = "is_private")
     private Boolean isPrivate;
 
