@@ -32,7 +32,7 @@ public class RocketController implements ResponseController {
 
     // 로켓 전송
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseDto> sendRocket(@RequestPart("data") @Validated RocketRequestDto rocketRequestDto,
+    public ResponseEntity<ResponseDto> sendRocket(@RequestPart(value = "data") @Validated RocketRequestDto rocketRequestDto,
                                                   @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
         rocketService.sendRocket(getUserId(), rocketRequestDto, files);
         return makeResponseEntity(HttpStatus.CREATED, "로켓이 전송 되었습니다.", null);

@@ -37,8 +37,11 @@ public class ReceivedChestController implements ResponseController {
         page = Math.max(page, 1);
         size = Math.max(size, 1);
 
+        //  정렬 기준을 설정
         Sort sortBy = Sort.by(Sort.Order.by(sort));
+        //  정렬 방향을 설정
         sortBy = order.equalsIgnoreCase("desc") ? sortBy.descending() : sortBy.ascending();
+
         Pageable pageable = PageRequest.of(page - 1, size, sortBy);
 
         ReceivedChestPageResponse chestList = receivedChestService.getReceivedChestList(getUserId(), rocketName, pageable, receiverType);

@@ -4,46 +4,36 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "group_tbl")
+@Table(name = "group_rocket_content_tbl")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class GroupEntity {
+public class GroupRocketContentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "group_id")
-    private Long groupId;
-
-    @Column(name = "group_name", nullable = false)
-    private String groupName;
-
-    private String description;
+    @Column(name = "grc_id")
+    private Long grcId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "theme_id")
-    private GroupThemeEntity theme;
+    @JoinColumn(name = "rocket_id")
+    private RocketEntity rocket;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader_id")
-    private UserEntity leader;
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
-    @Column(name = "member_limit")
-    private Integer memberLimit;
+    @Column(name = "content")
+    private String content;
 
-    @Column(name = "is_private")
-    private Boolean isPrivate;
+    @Column(name = "is_ready")
+    private boolean isReady;
 
-    private String password;
-
-    @Column(name = "background_image")
-    private String backgroundImage;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    private boolean isDeleted;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

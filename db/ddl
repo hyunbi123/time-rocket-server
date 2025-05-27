@@ -29,11 +29,22 @@ CREATE TABLE `refresh_tbl` (
 
 
 
+CREATE TABLE `group_theme_tbl` (
+  `group_theme_id` bigint NOT NULL AUTO_INCREMENT,
+  `theme` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  PRIMARY KEY (`group_theme_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+INSERT INTO group_theme_tbl (theme) VALUES ('요리'), ('음악');
+
+
+
 CREATE TABLE `group_tbl` (
   `group_id` bigint NOT NULL AUTO_INCREMENT,
   `group_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `leader_id` bigint NOT NULL,
+  `member_limit` int unsigned DEFAULT NULL,
   `is_private` tinyint(1) DEFAULT '0',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `background_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -41,10 +52,13 @@ CREATE TABLE `group_tbl` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
+  `theme_id` bigint DEFAULT NULL,
   PRIMARY KEY (`group_id`),
   KEY `leader_id` (`leader_id`),
-  CONSTRAINT `group_tbl_ibfk_1` FOREIGN KEY (`leader_id`) REFERENCES `user_tbl` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `theme_id` (`theme_id`),
+  CONSTRAINT `group_tbl_ibfk_1` FOREIGN KEY (`leader_id`) REFERENCES `user_tbl` (`user_id`),
+  CONSTRAINT `group_tbl_ibfk_2` FOREIGN KEY (`theme_id`) REFERENCES `group_theme_tbl` (`group_theme_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 
@@ -61,6 +75,24 @@ CREATE TABLE `group_member_tbl` (
   CONSTRAINT `fk_group_member_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`),
   CONSTRAINT `fk_group_member_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+CREATE TABLE `group_rocket_content_tbl` (
+  `grc_id` bigint NOT NULL AUTO_INCREMENT,
+  `rocket_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `is_ready` tinyint(1) DEFAULT '0',
+  `is_deleted` tinyint(1) DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`grc_id`),
+  KEY `fk_grc_rocket` (`rocket_id`),
+  KEY `fk_grc_user` (`user_id`),
+  CONSTRAINT `fk_grc_rocket` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_grc_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 
@@ -92,6 +124,7 @@ CREATE TABLE `rocket_tbl` (
 CREATE TABLE `rocket_file_tbl` (
   `file_id` bigint NOT NULL AUTO_INCREMENT,
   `rocket_id` bigint NOT NULL,
+  `grc_id` bigint DEFAULT NULL,
   `original_name` varchar(255) DEFAULT NULL,
   `unique_name` varchar(255) DEFAULT NULL,
   `saved_path` varchar(500) DEFAULT NULL,

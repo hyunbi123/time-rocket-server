@@ -30,9 +30,17 @@ public class FileService {
     @Value("${file.rocket-file}")
     private String uploadDir1;
 
+    @Value("${file.background-image}")
+    private String uploadDir2;
+
     // 로컬 디스크 저장
     public String saveRocketFile(MultipartFile file) throws IOException {
         return saveFile(file, uploadDir1);
+    }
+
+    // 로컬 디스크 저장
+    public String saveBackgroundImageFile(MultipartFile file) throws IOException {
+        return saveFile(file, uploadDir2);
     }
 
     private String saveFile(MultipartFile file, String uploadDir) throws IOException {

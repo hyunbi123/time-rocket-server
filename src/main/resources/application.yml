@@ -94,3 +94,4 @@ decorator:
 file:
   access-url-base: http://localhost:8081/images/
   rocket-file: C:/time_rocket/images/rocket_file
+  background-image: C:/time_rocket/images/background_image
