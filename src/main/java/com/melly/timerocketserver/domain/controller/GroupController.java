@@ -1,6 +1,7 @@
 package com.melly.timerocketserver.domain.controller;
 
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
+import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
 import com.melly.timerocketserver.domain.service.GroupService;
@@ -31,6 +32,7 @@ public class GroupController implements ResponseController {
         this.groupService = groupService;
     }
 
+    // 모임 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDto> createGroup(@Validated @RequestPart(value = "data") CreateGroupRequest createGroupRequest,
                                                    @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
@@ -38,6 +40,7 @@ public class GroupController implements ResponseController {
         return makeResponseEntity(HttpStatus.CREATED, "모임이 성공적으로 생성되었습니다.", null);
     }
 
+    // 모임 조회
     @GetMapping()
     public ResponseEntity<ResponseDto> getGroupList(@RequestParam(defaultValue = "1") int page,
                                                     @RequestParam(defaultValue = "10") int size,
@@ -54,12 +57,27 @@ public class GroupController implements ResponseController {
         return makeResponseEntity(HttpStatus.OK, "모임의 목록을 조회하는데 성공했습니다.", groupList);
     }
 
+    // 모임 상세 조회
     @GetMapping("/{groupId}")
     public ResponseEntity<ResponseDto> getGroupDetail(@PathVariable("groupId") Long groupId){
         GroupDetailResponse groupDetail = groupService.getGroupDetail(groupId);
         return makeResponseEntity(HttpStatus.OK, "해당 모임을 상세 조회하는데 성공했습니다.", groupDetail);
     }
 
+    // 모임 참가
+    @PostMapping("/{groupId}/members")
+    public ResponseEntity<ResponseDto> joinGroup(@PathVariable("groupId") Long groupId,
+                                                 @RequestBody(required = false) JoinGroupPasswordRequest request){
+        groupService.joinGroup(groupId, getUserId(), request);
+        return makeResponseEntity(HttpStatus.OK, "해당 모임 참석에 성공했습니다.", null);
+    }
+
+    // 모임 나가기
+    @DeleteMapping("/{groupId}/members/me")
+    public ResponseEntity<ResponseDto> leaveGroup(@PathVariable("groupId") Long groupId) {
+        groupService.leaveGroup(groupId, getUserId());
+        return makeResponseEntity(HttpStatus.OK, "모임을 성공적으로 탈퇴했습니다.", null);
+    }
 
     private Long getUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
