@@ -30,8 +30,8 @@ public class GroupMemberEntity {
     private LocalDateTime joinedAt;
 
     @Column(name = "is_kicked")
-    private boolean isKicked = false;
+    private boolean isKicked;
 
     @Column(name = "is_saved_rocket")
-    private boolean isSavedRocket = false;
+    private boolean isSavedRocket;
 }

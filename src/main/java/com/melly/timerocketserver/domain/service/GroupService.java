@@ -1,13 +1,18 @@
 package com.melly.timerocketserver.domain.service;
 
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
+import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
+import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
 import com.melly.timerocketserver.domain.entity.GroupEntity;
+import com.melly.timerocketserver.domain.entity.GroupMemberEntity;
 import com.melly.timerocketserver.domain.entity.GroupThemeEntity;
 import com.melly.timerocketserver.domain.entity.UserEntity;
+import com.melly.timerocketserver.domain.repository.GroupMemberRepository;
 import com.melly.timerocketserver.domain.repository.GroupRepository;
 import com.melly.timerocketserver.domain.repository.GroupThemeRepository;
 import com.melly.timerocketserver.domain.repository.UserRepository;
+import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,14 +33,18 @@ public class GroupService {
     private final UserRepository userRepository;
     private final FileService fileService;
     private final GroupThemeRepository groupThemeRepository;
+    private final GroupMemberRepository groupMemberRepository;
+
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
-                        GroupThemeRepository groupThemeRepository) {
+                        GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
         this.groupThemeRepository = groupThemeRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
+    // 모임 생성
     @Transactional
     public void createGroup(Long userId, CreateGroupRequest createGroupRequest, MultipartFile file) throws IOException {
         // 비공개 그룹일 때 비밀번호 체크
@@ -67,14 +78,24 @@ public class GroupService {
                 .theme(theme)
                 .leader(user)
                 .memberLimit(createGroupRequest.getMemberLimit())
+                .currentMemberCount(1)
                 .isPrivate(createGroupRequest.getIsPrivate())
                 .password(createGroupRequest.getIsPrivate() ? createGroupRequest.getPassword() : null)
                 .backgroundImage(backgroundImageUrl)
                 .isDeleted(false)
                 .build();
         groupRepository.save(groupEntity);
+
+        GroupMemberEntity leaderMember = GroupMemberEntity.builder()
+                .group(groupEntity)
+                .user(user)
+                .joinedAt(LocalDateTime.now())
+                .isKicked(false)
+                .build();
+        groupMemberRepository.save(leaderMember);
     }
 
+    // 모임 조회
     public GroupPageResponse getGroupList(Pageable pageable, String groupName, String theme) {
         Slice<GroupEntity> findEntity = null;
 
@@ -95,6 +116,7 @@ public class GroupService {
                         .description(find.getDescription())
                         .leaderNickname(find.getLeader().getNickname())
                         .memberLimit(find.getMemberLimit())
+                        .currentMemberCount(find.getCurrentMemberCount())
                         .isPrivate(find.getIsPrivate())
                         .backgroundImage(find.getBackgroundImage())
                         .build())
@@ -118,5 +140,90 @@ public class GroupService {
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();
+    }
+
+    // 모임 상세 조회
+    public GroupDetailResponse getGroupDetail(Long groupId) {
+        GroupEntity findEntity = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+        return GroupDetailResponse.builder()
+                .groupId(findEntity.getGroupId())
+                .groupName(findEntity.getGroupName())
+                .description(findEntity.getDescription())
+                .leaderNickname(findEntity.getLeader().getNickname())
+                .memberLimit(findEntity.getMemberLimit())
+                .currentMemberCount(findEntity.getCurrentMemberCount())
+                .isPrivate(findEntity.getIsPrivate())
+                .backgroundImage(findEntity.getBackgroundImage())
+                .build();
+    }
+    
+    // 모임 참가
+    @Transactional
+    public void joinGroup(Long groupId, Long userId, JoinGroupPasswordRequest request) {
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
+        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("해당 유저는 존재하지 않습니다."));
+
+        // 비공개 모임의 경우 비밀번호 체크
+        if (group.getIsPrivate()) {
+            if (request == null || request.getPassword() == null) {
+                throw new IllegalArgumentException("비공개 모임에는 비밀번호가 필요합니다.");
+            }
+            if (!group.getPassword().equals(request.getPassword())) {
+                throw new IllegalArgumentException("비공개 모임 비밀번호가 일치하지 않습니다.");
+            }
+        }
+
+        Optional<GroupMemberEntity> existingMembership = groupMemberRepository.findByGroupAndUser(group, user);
+        if (existingMembership.isPresent()) {
+            if (existingMembership.get().isKicked()) {
+                throw new IllegalStateException("강퇴된 사용자는 다시 모임에 참여할 수 없습니다.");
+            } else {
+                throw new IllegalStateException("이미 모임에 참여한 사용자입니다.");
+            }
+        }
+
+        // 인원 초과 체크
+        if (group.getCurrentMemberCount() >= group.getMemberLimit()) {
+            throw new IllegalStateException("모임 정원이 초과되어 참여할 수 없습니다.");
+        }
+
+        // 인원 수 증가
+        group.setCurrentMemberCount(group.getCurrentMemberCount() + 1);
+        groupRepository.save(group);
+
+        // 참여 정보 저장
+        GroupMemberEntity groupMemberEntity = GroupMemberEntity.builder()
+                .group(group)
+                .user(user)
+                .joinedAt(LocalDateTime.now())
+                .isKicked(false)
+                .build();
+        groupMemberRepository.save(groupMemberEntity);
+    }
+
+    @Transactional
+    public void leaveGroup(Long groupId, Long userId) {
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("해당 유저는 존재하지 않습니다."));
+
+        // 그룹장인지 확인
+        if (group.getLeader().getUserId().equals(userId)) {
+            throw new IllegalStateException("그룹장은 모임에서 나갈 수 없습니다. 모임 삭제만 가능합니다.");
+        }
+
+        GroupMemberEntity groupMember = groupMemberRepository.findByGroupAndUser(group, user)
+                .orElseThrow(() -> new IllegalStateException("해당 모임에 참여한 적이 없습니다."));
+
+        groupMemberRepository.delete(groupMember); // 참여 기록 삭제
+
+        // 인원 수 감소
+        group.setCurrentMemberCount(group.getCurrentMemberCount() - 1);
+        groupRepository.save(group);
     }
 }

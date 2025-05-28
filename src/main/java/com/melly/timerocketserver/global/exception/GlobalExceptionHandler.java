@@ -107,6 +107,12 @@ public class GlobalExceptionHandler implements ResponseController {
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<ResponseDto> handleUserNotFound(GroupNotFoundException e) {
+        log.error("404 Error : " + e.getMessage());
+        return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ResponseDto> handleMaxSizeException(MaxUploadSizeExceededException ex) {
         log.error("413 Error : 파일 업로드 용량 초과 - {}", ex.getMessage());
