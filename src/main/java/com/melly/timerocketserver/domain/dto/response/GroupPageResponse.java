@@ -29,6 +29,7 @@ public class GroupPageResponse {
         private String description;
         private String leaderNickname;
         private Integer memberLimit;
+        private Integer currentMemberCount;
         @JsonProperty("isPrivate")
         private Boolean isPrivate;
         private String backgroundImage;

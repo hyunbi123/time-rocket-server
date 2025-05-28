@@ -34,6 +34,9 @@ public class GroupEntity {
     @Column(name = "member_limit")
     private Integer memberLimit;
 
+    @Column(name = "current_member_count")
+    private Integer currentMemberCount;
+
     @Column(name = "is_private")
     private Boolean isPrivate;
 
