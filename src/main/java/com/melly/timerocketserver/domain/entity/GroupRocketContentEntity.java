@@ -22,6 +22,10 @@ public class GroupRocketContentEntity {
     private RocketEntity rocket;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private GroupEntity group;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
@@ -29,11 +33,11 @@ public class GroupRocketContentEntity {
     private String content;
 
     @Column(name = "is_ready")
-    private boolean isReady;
+    private Boolean ready;
 
 
     @Column(name = "is_deleted")
-    private boolean isDeleted;
+    private Boolean isDeleted;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

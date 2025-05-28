@@ -1,6 +1,8 @@
 package com.melly.timerocketserver.domain.controller;
 
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
+import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
+import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
 import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Validated
 @RestController
@@ -94,6 +97,23 @@ public class GroupController implements ResponseController {
                                                        @PathVariable @Min(value = 1, message = "userId는 1 이상이어야 합니다.") Long userId){
         groupService.kickGroupMember(groupId, userId, getCurrentUserId());
         return makeResponseEntity(HttpStatus.OK, "해당 참여 회원이 강제 퇴장 처리되었습니다.", null);
+    }
+
+    // 모임 로켓 컨텐츠 준비 및 저장
+    @PostMapping("/{groupId}/rockets/contents")
+    public ResponseEntity<ResponseDto> readyGroupRocketContent(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
+                                                               @RequestPart("data") GroupContentRequest request,
+                                                               @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
+        groupService.readyGroupRocketContent(groupId, getCurrentUserId(), request, files);
+        return makeResponseEntity(HttpStatus.OK, "모임 로켓의 Content 준비를 완료했습니다.", null);
+    }
+
+    // 모임 로켓 전송
+    @PostMapping("/{groupId}/rockets")
+    public ResponseEntity<ResponseDto> sendGroupRocket(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
+                                                       @RequestBody GroupRocketRequest request){
+        groupService.sendGroupRocket(groupId, getCurrentUserId(), request);
+        return makeResponseEntity(HttpStatus.OK, "모임 로켓을 성공적으로 전송했습니다.", null);
     }
 
     private Long getCurrentUserId(){

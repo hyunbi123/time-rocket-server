@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.FileNotFoundException;
@@ -113,8 +112,8 @@ public class GlobalExceptionHandler implements ResponseController {
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
-    @ExceptionHandler(GroupJoinConflictException.class)
-    public ResponseEntity<ResponseDto> handleCustomExceptions(GroupJoinConflictException e) {
+    @ExceptionHandler(GroupConflictException.class)
+    public ResponseEntity<ResponseDto> handleCustomExceptions(GroupConflictException e) {
         log.error("409 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.CONFLICT, e.getMessage(), null);
     }

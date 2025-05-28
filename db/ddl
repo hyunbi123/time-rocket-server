@@ -80,7 +80,7 @@ CREATE TABLE `group_member_tbl` (
 
 CREATE TABLE `group_rocket_content_tbl` (
   `grc_id` bigint NOT NULL AUTO_INCREMENT,
-  `rocket_id` bigint NOT NULL,
+  `rocket_id` bigint DEFAULT NULL,
   `user_id` bigint NOT NULL,
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `is_ready` tinyint(1) DEFAULT '0',
@@ -124,7 +124,7 @@ CREATE TABLE `rocket_tbl` (
 
 CREATE TABLE `rocket_file_tbl` (
   `file_id` bigint NOT NULL AUTO_INCREMENT,
-  `rocket_id` bigint NOT NULL,
+  `rocket_id` bigint DEFAULT NULL,
   `grc_id` bigint DEFAULT NULL,
   `original_name` varchar(255) DEFAULT NULL,
   `unique_name` varchar(255) DEFAULT NULL,

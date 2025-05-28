@@ -1,19 +1,15 @@
 package com.melly.timerocketserver.domain.service;
 
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
+import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
+import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
 import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
-import com.melly.timerocketserver.domain.entity.GroupEntity;
-import com.melly.timerocketserver.domain.entity.GroupMemberEntity;
-import com.melly.timerocketserver.domain.entity.GroupThemeEntity;
-import com.melly.timerocketserver.domain.entity.UserEntity;
-import com.melly.timerocketserver.domain.repository.GroupMemberRepository;
-import com.melly.timerocketserver.domain.repository.GroupRepository;
-import com.melly.timerocketserver.domain.repository.GroupThemeRepository;
-import com.melly.timerocketserver.domain.repository.UserRepository;
-import com.melly.timerocketserver.global.exception.GroupJoinConflictException;
+import com.melly.timerocketserver.domain.entity.*;
+import com.melly.timerocketserver.domain.repository.*;
+import com.melly.timerocketserver.global.exception.GroupConflictException;
 import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
@@ -25,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,14 +34,22 @@ public class GroupService {
     private final FileService fileService;
     private final GroupThemeRepository groupThemeRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final GroupRocketContentRepository groupRocketContentRepository;
+    private final RocketRepository rocketRepository;
+    private final RocketFileRepository rocketFileRepository;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
-                        GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository) {
+                        GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
+                        GroupRocketContentRepository groupRocketContentRepository, RocketRepository rocketRepository,
+                        RocketFileRepository rocketFileRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
         this.groupThemeRepository = groupThemeRepository;
         this.groupMemberRepository = groupMemberRepository;
+        this.groupRocketContentRepository = groupRocketContentRepository;
+        this.rocketRepository = rocketRepository;
+        this.rocketFileRepository = rocketFileRepository;
     }
 
     // 모임 생성
@@ -60,7 +66,7 @@ public class GroupService {
             }
         }
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
+        UserEntity user = userRepository.findByUserId(userId).orElseThrow(() -> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
 
         GroupThemeEntity theme = null;
         if (createGroupRequest.getTheme() != null && !createGroupRequest.getTheme().isBlank()) {
@@ -170,7 +176,7 @@ public class GroupService {
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
+        UserEntity user = userRepository.findByUserId(userId).orElseThrow(()-> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
 
         // 비공개 모임의 경우 비밀번호 체크
         if (group.getIsPrivate()) {
@@ -185,15 +191,15 @@ public class GroupService {
         Optional<GroupMemberEntity> existingMembership = groupMemberRepository.findByGroupAndUser(group, user);
         if (existingMembership.isPresent()) {
             if (existingMembership.get().isKicked()) {
-                throw new GroupJoinConflictException("강퇴된 사용자는 다시 모임에 참여할 수 없습니다.");
+                throw new GroupConflictException("강퇴된 사용자는 다시 모임에 참여할 수 없습니다.");
             } else {
-                throw new GroupJoinConflictException("이미 모임에 참여한 사용자입니다.");
+                throw new GroupConflictException("이미 모임에 참여한 사용자입니다.");
             }
         }
 
         // 인원 초과 체크
         if (group.getCurrentMemberCount() >= group.getMemberLimit()) {
-            throw new GroupJoinConflictException("모임 정원이 초과되어 참여할 수 없습니다.");
+            throw new GroupConflictException("모임 정원이 초과되어 참여할 수 없습니다.");
         }
 
         // 인원 수 증가
@@ -216,16 +222,16 @@ public class GroupService {
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
-        UserEntity user = userRepository.findById(userId)
+        UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
 
         // 그룹장인지 확인
         if (group.getLeader().getUserId().equals(userId)) {
-            throw new GroupJoinConflictException("그룹장은 모임에서 퇴장할 수 없습니다. 모임 삭제만 가능합니다.");
+            throw new GroupConflictException("그룹장은 모임에서 퇴장할 수 없습니다. 모임 삭제만 가능합니다.");
         }
 
         GroupMemberEntity groupMember = groupMemberRepository.findByGroupAndUser(group, user)
-                .orElseThrow(() -> new GroupJoinConflictException("해당 모임에 참여한 적이 없습니다."));
+                .orElseThrow(() -> new GroupConflictException("해당 모임에 참여한 적이 없습니다."));
 
         groupMemberRepository.delete(groupMember); // 참여 기록 삭제
 
@@ -237,7 +243,7 @@ public class GroupService {
     // 모임 참여자 확인
     public GroupMemberListResponse getGroupMemberList(Long groupId, Long userId) {
         GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
-                .orElseThrow(() -> new GroupJoinConflictException("해당 모임에 참여한 적이 없습니다."));
+                .orElseThrow(() -> new GroupConflictException("해당 모임에 참여한 적이 없습니다."));
 
         List<GroupMemberEntity> members = groupMemberRepository.findByGroup_GroupIdAndKickedFalse(groupId);
         int memberCount = groupMemberRepository.countByGroup_GroupIdAndKickedFalse(groupId);
@@ -261,28 +267,28 @@ public class GroupService {
 
     // 참여자 강퇴
     @Transactional
-    public void kickGroupMember(Long groupId, Long userId, Long currentUserId) {
+    public void kickGroupMember(Long groupId, Long targetId, Long currentUserId) {
         // 그룹 존재 및 삭제 여부 확인
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
         // 현재 요청한 사용자가 리더인지 확인
         if (!group.getLeader().getUserId().equals(currentUserId)) {
-            throw new GroupJoinConflictException("모임의 리더만 강퇴할 수 있습니다.");
+            throw new GroupConflictException("모임의 리더만 강퇴할 수 있습니다.");
         }
 
         // 대상 유저가 그룹의 참여자인지 확인
-        GroupMemberEntity targetMember = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
+        GroupMemberEntity targetMember = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, targetId)
                 .orElseThrow(() -> new UserNotFoundException("요청한 회원은 해당 모임의 참여자가 아닙니다."));
 
         // 이미 강퇴된 상태인지 확인
         if (targetMember.isKicked()) {
-            throw new GroupJoinConflictException("해당 회원은 이미 모임에서 강퇴된 상태입니다.");
+            throw new GroupConflictException("해당 회원은 이미 모임에서 강퇴된 상태입니다.");
         }
 
         // 리더 본인을 강퇴하지 못하도록 방어
-        if (userId.equals(currentUserId)) {
-            throw new GroupJoinConflictException("자기 자신을 강퇴할 수 없습니다.");
+        if (targetId.equals(currentUserId)) {
+            throw new GroupConflictException("자기 자신을 강퇴할 수 없습니다.");
         }
 
         // 강퇴 처리
@@ -291,5 +297,118 @@ public class GroupService {
 
         group.setCurrentMemberCount(group.getCurrentMemberCount() - 1);
         groupRepository.save(group);
+    }
+
+    // 모임 로켓 컨텐츠 준비
+    @Transactional
+    public void readyGroupRocketContent(Long groupId, Long userId, GroupContentRequest request, List<MultipartFile> files) throws IOException {
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
+
+        // 이미 작성된 컨텐츠가 있으면 가져오고, 없으면 새로 생성
+        GroupRocketContentEntity grc = groupRocketContentRepository
+                .findByGroup_GroupIdAndUser_UserIdAndIsDeletedFalse(groupId, userId)
+                .orElseGet(() -> GroupRocketContentEntity.builder()
+                        .group(group)
+                        .user(user)
+                        .content(request.getContent())
+                        .ready(true)
+                        .isDeleted(false)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+
+        grc.setContent(request.getContent()); // 항상 갱신
+
+        // 파일 여러 개 저장
+        if (files != null && !files.isEmpty()) {
+            int order = 1;
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    // saveRocketFile 에서 저장과 고유명 생성 모두 처리
+                    String savedPath = fileService.saveRocketFile(file);
+
+                    // savedPath 의 가장 마지막 / 이후의 문자열을 추출
+                    String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
+
+                    RocketFileEntity rocketFile = RocketFileEntity.builder()
+                            .groupRocketContent(grc)
+                            .originalName(file.getOriginalFilename())
+                            .uniqueName(uniqueName)
+                            .savedPath(savedPath)
+                            .fileType(file.getContentType())
+                            .fileSize(file.getSize())
+                            .fileOrder(order++)
+                            .build();
+                    rocketFileRepository.save(rocketFile);
+                }
+            }
+        }
+        groupRocketContentRepository.save(grc);
+    }
+
+    @Transactional
+    public void sendGroupRocket(Long groupId, Long currentUserId, GroupRocketRequest request) {
+        // 리더 권한 확인
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
+        if (!group.getLeader().getUserId().equals(currentUserId)) {
+            throw new GroupConflictException("모임 리더만 전송할 수 있습니다.");
+        }
+
+        UserEntity receiver = userRepository.findByEmail(request.getReceiverEmail())
+                .orElseThrow(() -> new UserNotFoundException("수신자 이메일을 찾을 수 없습니다."));
+
+        // is_ready == true && is_deleted == false인 콘텐츠 조회
+        List<GroupRocketContentEntity> contents = groupRocketContentRepository.findByGroup_GroupIdAndReadyTrueAndIsDeletedFalse(groupId);
+        if (contents.isEmpty()) {
+            throw new GroupNotFoundException("전송할 준비된 콘텐츠가 없습니다.");
+        }
+
+        // 콘텐츠 섞기 (셔플)
+        Collections.shuffle(contents);
+
+        // 그룹 로켓 생성
+        RocketEntity rocket = RocketEntity.builder()
+                .group(group)
+                .rocketName(request.getRocketName())
+                .design(request.getDesign())
+                .receiverUser(receiver)
+                .receiverType("group")
+                .isLock(true)
+                .lockExpiredAt(request.getLockExpiredAt())
+                .content(buildMergedContent(contents))
+                .sentAt(LocalDateTime.now())
+                .build();
+        rocketRepository.save(rocket);
+
+        // 각 콘텐츠에 rocket_id 설정
+        for (GroupRocketContentEntity content : contents) {
+            content.setRocket(rocket);
+        }
+
+        // 첨부 파일 처리 (파일도 섞어서 저장하고 rocket_id에 연결)
+        if (request.getFiles() != null && !request.getFiles().isEmpty()) {
+            List<MultipartFile> shuffledFiles = new ArrayList<>(request.getFiles());
+            Collections.shuffle(shuffledFiles);
+
+            // 파일 저장하면서 RocketFileEntity 리스트를 받아옴
+            List<RocketFileEntity> fileEntities = fileService.saveGroupRocketFiles(shuffledFiles);
+
+            // rocket 연관관계 주입 및 저장
+            for (RocketFileEntity fileEntity : fileEntities) {
+                fileEntity.setRocket(rocket);
+                rocketFileRepository.save(fileEntity);
+            }
+        }
+    }
+
+    private String buildMergedContent(List<GroupRocketContentEntity> contents) {
+        return contents.stream()
+                .map(content -> content.getUser().getNickname() + ": " + content.getContent())
+                .collect(Collectors.joining("\n\n"));
     }
 }
