@@ -8,6 +8,7 @@ import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -59,24 +60,24 @@ public class GroupController implements ResponseController {
 
     // 모임 상세 조회
     @GetMapping("/{groupId}")
-    public ResponseEntity<ResponseDto> getGroupDetail(@PathVariable("groupId") Long groupId){
+    public ResponseEntity<ResponseDto> getGroupDetail(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId){
         GroupDetailResponse groupDetail = groupService.getGroupDetail(groupId);
         return makeResponseEntity(HttpStatus.OK, "해당 모임을 상세 조회하는데 성공했습니다.", groupDetail);
     }
 
     // 모임 참가
     @PostMapping("/{groupId}/members")
-    public ResponseEntity<ResponseDto> joinGroup(@PathVariable("groupId") Long groupId,
+    public ResponseEntity<ResponseDto> joinGroup(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
                                                  @RequestBody(required = false) JoinGroupPasswordRequest request){
         groupService.joinGroup(groupId, getUserId(), request);
         return makeResponseEntity(HttpStatus.OK, "해당 모임 참석에 성공했습니다.", null);
     }
 
-    // 모임 나가기
+    // 모임 퇴장
     @DeleteMapping("/{groupId}/members/me")
-    public ResponseEntity<ResponseDto> leaveGroup(@PathVariable("groupId") Long groupId) {
+    public ResponseEntity<ResponseDto> leaveGroup(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId) {
         groupService.leaveGroup(groupId, getUserId());
-        return makeResponseEntity(HttpStatus.OK, "모임을 성공적으로 탈퇴했습니다.", null);
+        return makeResponseEntity(HttpStatus.OK, "모임을 성공적으로 퇴장했습니다.", null);
     }
 
     private Long getUserId(){
