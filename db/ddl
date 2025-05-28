@@ -43,8 +43,10 @@ CREATE TABLE `group_tbl` (
   `group_id` bigint NOT NULL AUTO_INCREMENT,
   `group_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `theme_id` bigint DEFAULT NULL,
   `leader_id` bigint NOT NULL,
   `member_limit` int unsigned DEFAULT NULL,
+  `current_member_count` int unsigned DEFAULT '1',
   `is_private` tinyint(1) DEFAULT '0',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `background_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -52,13 +54,12 @@ CREATE TABLE `group_tbl` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
-  `theme_id` bigint DEFAULT NULL,
   PRIMARY KEY (`group_id`),
   KEY `leader_id` (`leader_id`),
   KEY `theme_id` (`theme_id`),
   CONSTRAINT `group_tbl_ibfk_1` FOREIGN KEY (`leader_id`) REFERENCES `user_tbl` (`user_id`),
   CONSTRAINT `group_tbl_ibfk_2` FOREIGN KEY (`theme_id`) REFERENCES `group_theme_tbl` (`group_theme_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 
