@@ -1,6 +1,7 @@
 package com.melly.timerocketserver.domain.service;
 
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
+import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
 import com.melly.timerocketserver.domain.entity.GroupEntity;
 import com.melly.timerocketserver.domain.entity.GroupThemeEntity;
@@ -8,6 +9,7 @@ import com.melly.timerocketserver.domain.entity.UserEntity;
 import com.melly.timerocketserver.domain.repository.GroupRepository;
 import com.melly.timerocketserver.domain.repository.GroupThemeRepository;
 import com.melly.timerocketserver.domain.repository.UserRepository;
+import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +36,7 @@ public class GroupService {
         this.groupThemeRepository = groupThemeRepository;
     }
 
+    // 모임 생성
     @Transactional
     public void createGroup(Long userId, CreateGroupRequest createGroupRequest, MultipartFile file) throws IOException {
         // 비공개 그룹일 때 비밀번호 체크
@@ -76,6 +79,7 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
+    // 모임 조회
     public GroupPageResponse getGroupList(Pageable pageable, String groupName, String theme) {
         Slice<GroupEntity> findEntity = null;
 
@@ -119,6 +123,22 @@ public class GroupService {
                 .hasNext(findEntity.hasNext())
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
+                .build();
+    }
+
+    // 모임 상세 조회
+    public GroupDetailResponse getGroupDetail(Long groupId) {
+        GroupEntity findEntity = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+        return GroupDetailResponse.builder()
+                .groupId(findEntity.getGroupId())
+                .groupName(findEntity.getGroupName())
+                .description(findEntity.getDescription())
+                .leaderNickname(findEntity.getLeader().getNickname())
+                .memberLimit(findEntity.getMemberLimit())
+                .currentMemberCount(findEntity.getCurrentMemberCount())
+                .isPrivate(findEntity.getIsPrivate())
+                .backgroundImage(findEntity.getBackgroundImage())
                 .build();
     }
 }

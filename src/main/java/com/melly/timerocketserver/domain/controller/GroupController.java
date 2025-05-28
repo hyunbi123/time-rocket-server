@@ -1,6 +1,7 @@
 package com.melly.timerocketserver.domain.controller;
 
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
+import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
 import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
@@ -51,6 +52,12 @@ public class GroupController implements ResponseController {
         GroupPageResponse groupList = groupService.getGroupList(pageable, groupName, theme);
 
         return makeResponseEntity(HttpStatus.OK, "모임의 목록을 조회하는데 성공했습니다.", groupList);
+    }
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity<ResponseDto> getGroupDetail(@PathVariable("groupId") Long groupId){
+        GroupDetailResponse groupDetail = groupService.getGroupDetail(groupId);
+        return makeResponseEntity(HttpStatus.OK, "해당 모임을 상세 조회하는데 성공했습니다.", groupDetail);
     }
 
 
