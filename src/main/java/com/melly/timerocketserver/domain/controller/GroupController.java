@@ -38,7 +38,7 @@ public class GroupController implements ResponseController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDto> createGroup(@Validated @RequestPart(value = "data") CreateGroupRequest createGroupRequest,
                                                    @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
-        groupService.createGroup(getUserId(), createGroupRequest, file);
+        groupService.createGroup(getCurrentUserId(), createGroupRequest, file);
         return makeResponseEntity(HttpStatus.CREATED, "모임이 성공적으로 생성되었습니다.", null);
     }
 
@@ -70,25 +70,33 @@ public class GroupController implements ResponseController {
     @PostMapping("/{groupId}/members")
     public ResponseEntity<ResponseDto> joinGroup(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
                                                  @RequestBody(required = false) JoinGroupPasswordRequest request){
-        groupService.joinGroup(groupId, getUserId(), request);
+        groupService.joinGroup(groupId, getCurrentUserId(), request);
         return makeResponseEntity(HttpStatus.OK, "해당 모임 참석에 성공했습니다.", null);
     }
 
     // 모임 퇴장
     @DeleteMapping("/{groupId}/members/me")
     public ResponseEntity<ResponseDto> leaveGroup(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId) {
-        groupService.leaveGroup(groupId, getUserId());
+        groupService.leaveGroup(groupId, getCurrentUserId());
         return makeResponseEntity(HttpStatus.OK, "모임을 성공적으로 퇴장했습니다.", null);
     }
 
     // 모임 참여자 확인
     @GetMapping("/{groupId}/members")
     public ResponseEntity<ResponseDto> getGroupMemberList(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId){
-        GroupMemberListResponse groupMemberList = groupService.getGroupMemberList(groupId, getUserId());
+        GroupMemberListResponse groupMemberList = groupService.getGroupMemberList(groupId, getCurrentUserId());
         return makeResponseEntity(HttpStatus.OK, "해당 모임의 참여자 목록 조회를 성공했습니다.", groupMemberList);
     }
 
-    private Long getUserId(){
+    // 모임 참여자 강퇴
+    @PatchMapping("/{groupId}/members/{userId}")
+    public ResponseEntity<ResponseDto> kickGroupMember(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
+                                                       @PathVariable @Min(value = 1, message = "userId는 1 이상이어야 합니다.") Long userId){
+        groupService.kickGroupMember(groupId, userId, getCurrentUserId());
+        return makeResponseEntity(HttpStatus.OK, "해당 참여 회원이 강제 퇴장 처리되었습니다.", null);
+    }
+
+    private Long getCurrentUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         return customUserDetails.getUser().getUserId();

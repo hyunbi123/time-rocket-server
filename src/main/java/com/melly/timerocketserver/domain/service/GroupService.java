@@ -92,7 +92,7 @@ public class GroupService {
                 .group(groupEntity)
                 .user(user)
                 .joinedAt(LocalDateTime.now())
-                .isKicked(false)
+                .kicked(false)
                 .build();
         groupMemberRepository.save(leaderMember);
     }
@@ -205,7 +205,7 @@ public class GroupService {
                 .group(group)
                 .user(user)
                 .joinedAt(LocalDateTime.now())
-                .isKicked(false)
+                .kicked(false)
                 .build();
         groupMemberRepository.save(groupMemberEntity);
     }
@@ -239,8 +239,8 @@ public class GroupService {
         GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
                 .orElseThrow(() -> new GroupJoinConflictException("해당 모임에 참여한 적이 없습니다."));
 
-        List<GroupMemberEntity> members = groupMemberRepository.findAllByGroup_GroupId(groupId);
-        int memberCount = groupMemberRepository.countByGroup_GroupId(groupId);
+        List<GroupMemberEntity> members = groupMemberRepository.findByGroup_GroupIdAndKickedFalse(groupId);
+        int memberCount = groupMemberRepository.countByGroup_GroupIdAndKickedFalse(groupId);
 
         List<GroupMemberListResponse.MemberDto> memberDtos = members.stream()
                 .map(m -> GroupMemberListResponse.MemberDto.builder()
@@ -257,5 +257,39 @@ public class GroupService {
                 .members(memberDtos)
                 .MemberCount(memberCount)
                 .build();
+    }
+
+    // 참여자 강퇴
+    @Transactional
+    public void kickGroupMember(Long groupId, Long userId, Long currentUserId) {
+        // 그룹 존재 및 삭제 여부 확인
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
+        // 현재 요청한 사용자가 리더인지 확인
+        if (!group.getLeader().getUserId().equals(currentUserId)) {
+            throw new GroupJoinConflictException("모임의 리더만 강퇴할 수 있습니다.");
+        }
+
+        // 대상 유저가 그룹의 참여자인지 확인
+        GroupMemberEntity targetMember = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
+                .orElseThrow(() -> new UserNotFoundException("요청한 회원은 해당 모임의 참여자가 아닙니다."));
+
+        // 이미 강퇴된 상태인지 확인
+        if (targetMember.isKicked()) {
+            throw new GroupJoinConflictException("해당 회원은 이미 모임에서 강퇴된 상태입니다.");
+        }
+
+        // 리더 본인을 강퇴하지 못하도록 방어
+        if (userId.equals(currentUserId)) {
+            throw new GroupJoinConflictException("자기 자신을 강퇴할 수 없습니다.");
+        }
+
+        // 강퇴 처리
+        targetMember.setKicked(true);
+        groupMemberRepository.save(targetMember);
+
+        group.setCurrentMemberCount(group.getCurrentMemberCount() - 1);
+        groupRepository.save(group);
     }
 }
