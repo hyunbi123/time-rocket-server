@@ -12,6 +12,7 @@ import com.melly.timerocketserver.domain.repository.GroupMemberRepository;
 import com.melly.timerocketserver.domain.repository.GroupRepository;
 import com.melly.timerocketserver.domain.repository.GroupThemeRepository;
 import com.melly.timerocketserver.domain.repository.UserRepository;
+import com.melly.timerocketserver.global.exception.GroupJoinConflictException;
 import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
@@ -58,7 +59,7 @@ public class GroupService {
             }
         }
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("회원이 존재하지 않습니다."));
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
 
         GroupThemeEntity theme = null;
         if (createGroupRequest.getTheme() != null && !createGroupRequest.getTheme().isBlank()) {
@@ -107,6 +108,10 @@ public class GroupService {
             findEntity = groupRepository.findByIsDeletedFalseAndTheme_Theme(theme, pageable);
         } else {
             findEntity = groupRepository.findByIsDeletedFalse(pageable);
+        }
+
+        if(findEntity == null|| findEntity.isEmpty()){
+            throw new GroupNotFoundException("해당 조건에 맞는 모임이 존재하지 않습니다.");
         }
 
         List<GroupPageResponse.GroupDto> groupDtoList = findEntity.getContent().stream()
@@ -164,7 +169,7 @@ public class GroupService {
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
-        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("해당 유저는 존재하지 않습니다."));
+        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
 
         // 비공개 모임의 경우 비밀번호 체크
         if (group.getIsPrivate()) {
@@ -179,15 +184,15 @@ public class GroupService {
         Optional<GroupMemberEntity> existingMembership = groupMemberRepository.findByGroupAndUser(group, user);
         if (existingMembership.isPresent()) {
             if (existingMembership.get().isKicked()) {
-                throw new IllegalStateException("강퇴된 사용자는 다시 모임에 참여할 수 없습니다.");
+                throw new GroupJoinConflictException("강퇴된 사용자는 다시 모임에 참여할 수 없습니다.");
             } else {
-                throw new IllegalStateException("이미 모임에 참여한 사용자입니다.");
+                throw new GroupJoinConflictException("이미 모임에 참여한 사용자입니다.");
             }
         }
 
         // 인원 초과 체크
         if (group.getCurrentMemberCount() >= group.getMemberLimit()) {
-            throw new IllegalStateException("모임 정원이 초과되어 참여할 수 없습니다.");
+            throw new GroupJoinConflictException("모임 정원이 초과되어 참여할 수 없습니다.");
         }
 
         // 인원 수 증가
@@ -203,22 +208,23 @@ public class GroupService {
                 .build();
         groupMemberRepository.save(groupMemberEntity);
     }
-
+    
+    // 모임 퇴장
     @Transactional
     public void leaveGroup(Long groupId, Long userId) {
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("해당 유저는 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundException("로그인한 사용자의 정보를 찾을 수 없습니다."));
 
         // 그룹장인지 확인
         if (group.getLeader().getUserId().equals(userId)) {
-            throw new IllegalStateException("그룹장은 모임에서 나갈 수 없습니다. 모임 삭제만 가능합니다.");
+            throw new GroupJoinConflictException("그룹장은 모임에서 퇴장할 수 없습니다. 모임 삭제만 가능합니다.");
         }
 
         GroupMemberEntity groupMember = groupMemberRepository.findByGroupAndUser(group, user)
-                .orElseThrow(() -> new IllegalStateException("해당 모임에 참여한 적이 없습니다."));
+                .orElseThrow(() -> new GroupJoinConflictException("해당 모임에 참여한 적이 없습니다."));
 
         groupMemberRepository.delete(groupMember); // 참여 기록 삭제
 

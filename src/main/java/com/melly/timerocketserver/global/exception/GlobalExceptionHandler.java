@@ -60,57 +60,63 @@ public class GlobalExceptionHandler implements ResponseController {
 
     // 사용자 정의 예외
     @ExceptionHandler(DuplicateNicknameException.class)
-    public ResponseEntity<ResponseDto> handleDuplicateNickname(DuplicateNicknameException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(DuplicateNicknameException e) {
         log.error("400 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.BAD_REQUEST, e.getMessage(), null);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(UserNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(UserNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(RocketNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(RocketNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(RocketNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(ChestNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(ChestNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(ChestNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(ChestAccessDeniedException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(ChestAccessDeniedException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(ChestAccessDeniedException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(DisplayNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(DisplayNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(DisplayNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(FileNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(FileNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(FileNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(GroupThemeNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(GroupThemeNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(GroupThemeNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
     }
 
     @ExceptionHandler(GroupNotFoundException.class)
-    public ResponseEntity<ResponseDto> handleUserNotFound(GroupNotFoundException e) {
+    public ResponseEntity<ResponseDto> handleCustomExceptions(GroupNotFoundException e) {
         log.error("404 Error : " + e.getMessage());
         return makeResponseEntity(HttpStatus.NOT_FOUND, e.getMessage(), null);
+    }
+
+    @ExceptionHandler(GroupJoinConflictException.class)
+    public ResponseEntity<ResponseDto> handleCustomExceptions(GroupJoinConflictException e) {
+        log.error("409 Error : " + e.getMessage());
+        return makeResponseEntity(HttpStatus.CONFLICT, e.getMessage(), null);
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
