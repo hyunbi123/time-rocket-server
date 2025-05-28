@@ -3,6 +3,7 @@ package com.melly.timerocketserver.domain.controller;
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
 import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
+import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
 import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
@@ -78,6 +79,13 @@ public class GroupController implements ResponseController {
     public ResponseEntity<ResponseDto> leaveGroup(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId) {
         groupService.leaveGroup(groupId, getUserId());
         return makeResponseEntity(HttpStatus.OK, "모임을 성공적으로 퇴장했습니다.", null);
+    }
+
+    // 모임 참여자 확인
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<ResponseDto> getGroupMemberList(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId){
+        GroupMemberListResponse groupMemberList = groupService.getGroupMemberList(groupId, getUserId());
+        return makeResponseEntity(HttpStatus.OK, "해당 모임의 참여자 목록 조회를 성공했습니다.", groupMemberList);
     }
 
     private Long getUserId(){

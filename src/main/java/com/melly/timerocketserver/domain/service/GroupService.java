@@ -3,6 +3,7 @@ package com.melly.timerocketserver.domain.service;
 import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
 import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
+import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
 import com.melly.timerocketserver.domain.entity.GroupEntity;
 import com.melly.timerocketserver.domain.entity.GroupMemberEntity;
@@ -231,5 +232,30 @@ public class GroupService {
         // 인원 수 감소
         group.setCurrentMemberCount(group.getCurrentMemberCount() - 1);
         groupRepository.save(group);
+    }
+
+    // 모임 참여자 확인
+    public GroupMemberListResponse getGroupMemberList(Long groupId, Long userId) {
+        GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
+                .orElseThrow(() -> new GroupJoinConflictException("해당 모임에 참여한 적이 없습니다."));
+
+        List<GroupMemberEntity> members = groupMemberRepository.findAllByGroup_GroupId(groupId);
+        int memberCount = groupMemberRepository.countByGroup_GroupId(groupId);
+
+        List<GroupMemberListResponse.MemberDto> memberDtos = members.stream()
+                .map(m -> GroupMemberListResponse.MemberDto.builder()
+                        .groupMemberId(m.getGroupMemberId())
+                        .userId(m.getUser().getUserId())
+                        .nickname(m.getUser().getNickname())
+                        .isKicked(m.isKicked())
+                        .isSavedRocket(m.isSavedRocket())
+                        .build())
+                .toList();
+
+        // 응답 객체 생성 및 반환
+        return GroupMemberListResponse.builder()
+                .members(memberDtos)
+                .MemberCount(memberCount)
+                .build();
     }
 }
