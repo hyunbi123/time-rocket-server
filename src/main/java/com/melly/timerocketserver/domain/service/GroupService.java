@@ -34,21 +34,21 @@ public class GroupService {
     private final FileService fileService;
     private final GroupThemeRepository groupThemeRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final GroupRocketRepository groupRocketRepository;
     private final GroupRocketContentRepository groupRocketContentRepository;
-    private final RocketRepository rocketRepository;
     private final RocketFileRepository rocketFileRepository;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
                         GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
-                        GroupRocketContentRepository groupRocketContentRepository, RocketRepository rocketRepository,
+                        GroupRocketRepository groupRocketRepository, GroupRocketContentRepository groupRocketContentRepository,
                         RocketFileRepository rocketFileRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
         this.groupThemeRepository = groupThemeRepository;
         this.groupMemberRepository = groupMemberRepository;
+        this.groupRocketRepository = groupRocketRepository;
         this.groupRocketContentRepository = groupRocketContentRepository;
-        this.rocketRepository = rocketRepository;
         this.rocketFileRepository = rocketFileRepository;
     }
 
@@ -308,6 +308,12 @@ public class GroupService {
         UserEntity user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
 
+        // 해당 유저가 모임의 멤버인지 확인
+        boolean isMember = groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(groupId, userId);
+        if (!isMember) {
+            throw new GroupConflictException("해당 유저는 이 모임의 멤버가 아닙니다.");
+        }
+
         GroupRocketContentEntity grc = groupRocketContentRepository
                 .findByGroup_GroupIdAndGroupRocketIsNullAndUser_UserId(groupId, userId)
                 .orElseGet(() -> GroupRocketContentEntity.builder()
@@ -347,17 +353,57 @@ public class GroupService {
         groupRocketContentRepository.save(grc);
     }
 
+    // 준비완료 상태의 모임 로켓 전송
     @Transactional
     public void sendGroupRocket(Long groupId, Long currentUserId, GroupRocketRequest request) {
-//        // 리더 권한 확인
-//        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
-//                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
-//
-//        if (!group.getLeader().getUserId().equals(currentUserId)) {
-//            throw new GroupConflictException("모임 리더만 전송할 수 있습니다.");
-//        }
-//
-//        UserEntity receiver = userRepository.findByEmail(request.getReceiverEmail())
-//                .orElseThrow(() -> new UserNotFoundException("수신자 이메일을 찾을 수 없습니다."));
+        GroupEntity group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임이 존재하지 않습니다."));
+
+        if (!group.getLeader().getUserId().equals(currentUserId)) {
+            throw new GroupConflictException("리더만 전송할 수 있습니다.");
+        }
+
+        // 그룹 멤버 조회
+        List<GroupMemberEntity> groupMembers = groupMemberRepository.findAllByGroup_GroupId(groupId);
+
+        boolean alreadySent = groupRocketRepository.existsByGroup_GroupId(groupId);
+        if (alreadySent) {
+            throw new GroupConflictException("이미 해당 모임에 로켓이 전송된 이력이 있습니다.");
+        }
+
+        // 모든 멤버가 isReady == true인 GRC를 가지고 있는지 확인
+        for (GroupMemberEntity member : groupMembers) {
+            Long memberId = member.getUser().getUserId();
+            boolean hasReadyContent = groupRocketContentRepository
+                    .existsByGroup_GroupIdAndUser_UserIdAndReadyTrue(groupId, memberId);
+
+            if (!hasReadyContent) {
+                throw new GroupConflictException("모든 멤버가 로켓 콘텐츠를 준비해야 전송할 수 있습니다. 준비되지 않은 멤버 있음: " + member.getUser().getNickname());
+            }
+        }
+
+        // 전송 수행
+        for (GroupMemberEntity member : groupMembers) {
+            UserEntity receiver = member.getUser();
+
+            GroupRocketEntity rocket = GroupRocketEntity.builder()
+                    .group(group)
+                    .receiverUser(receiver)
+                    .rocketName(request.getRocketName())
+                    .design(request.getDesign())
+                    .isLock(true)
+                    .lockExpiredAt(request.getLockExpiredAt())
+                    .sentAt(LocalDateTime.now())
+                    .build();
+            groupRocketRepository.save(rocket);
+
+            List<GroupRocketContentEntity> contents = groupRocketContentRepository
+                    .findAllByGroup_GroupIdAndUser_UserIdAndReadyTrue(groupId, receiver.getUserId());
+
+            for (GroupRocketContentEntity content : contents) {
+                content.setGroupRocket(rocket);
+            }
+            groupRocketContentRepository.saveAll(contents); // 더티 체킹으로 save 명시 안해도 무관... (트랜잭션과 영속성 컨텍스트)
+        }
     }
 }

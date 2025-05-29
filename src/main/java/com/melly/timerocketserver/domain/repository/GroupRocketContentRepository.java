@@ -10,5 +10,7 @@ import java.util.Optional;
 @Repository
 public interface GroupRocketContentRepository extends JpaRepository<GroupRocketContentEntity,Long> {
     Optional<GroupRocketContentEntity> findByGroup_GroupIdAndGroupRocketIsNullAndUser_UserId(Long groupId, Long userId);
-//    List<GroupRocketContentEntity> findByGroup_GroupIdAndReadyTrueAndIsDeletedFalse(Long groupId);
+
+    boolean existsByGroup_GroupIdAndUser_UserIdAndReadyTrue(Long groupId, Long userId);
+    List<GroupRocketContentEntity> findAllByGroup_GroupIdAndUser_UserIdAndReadyTrue(Long groupId, Long userId);
 }

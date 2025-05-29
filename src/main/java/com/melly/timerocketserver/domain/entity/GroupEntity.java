@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "group_tbl")
@@ -66,4 +67,7 @@ public class GroupEntity {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    private List<GroupMemberEntity> members;
 }

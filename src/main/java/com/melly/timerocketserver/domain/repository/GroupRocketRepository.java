@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GroupRocketRepository extends JpaRepository<GroupRocketEntity,Long> {
-
+    boolean existsByGroup_GroupId(Long groupId);
 }
