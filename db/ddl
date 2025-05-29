@@ -100,6 +100,7 @@ CREATE TABLE `group_rocket_tbl` (
 CREATE TABLE `group_rocket_content_tbl` (
   `grc_id` bigint NOT NULL AUTO_INCREMENT,
   `group_rocket_id` bigint DEFAULT NULL,
+  `group_id` bigint NOT NULL,
   `user_id` bigint NOT NULL,
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `is_ready` tinyint(1) DEFAULT '0',
@@ -110,6 +111,8 @@ CREATE TABLE `group_rocket_content_tbl` (
   PRIMARY KEY (`grc_id`),
   KEY `fk_grc_user` (`user_id`),
   KEY `fk_grc_group_rocket` (`group_rocket_id`),
+  KEY `fk_grc_group` (`group_id`),
+  CONSTRAINT `fk_grc_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_grc_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE SET NULL,
   CONSTRAINT `fk_grc_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -148,10 +151,13 @@ CREATE TABLE `rocket_file_tbl` (
   `file_size` bigint DEFAULT NULL,
   `file_order` int DEFAULT '0',
   `uploaded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `grc_id` bigint DEFAULT NULL,
   PRIMARY KEY (`file_id`),
   UNIQUE KEY `uk_unique_name` (`unique_name`),
   KEY `rocket_id` (`rocket_id`),
   KEY `group_rocket_id` (`group_rocket_id`),
+  KEY `fk_rocket_file_grc` (`grc_id`),
+  CONSTRAINT `fk_rocket_file_grc` FOREIGN KEY (`grc_id`) REFERENCES `group_rocket_content_tbl` (`grc_id`) ON DELETE CASCADE,
   CONSTRAINT `rocket_file_fk_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE CASCADE,
   CONSTRAINT `rocket_file_tbl_ibfk_1` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
