@@ -326,6 +326,7 @@ public class GroupService {
                         .build());
 
         grc.setContent(request.getContent());
+        grc.setReady(true);
 
         // 파일 저장
         if (files != null && !files.isEmpty()) {
@@ -366,28 +367,26 @@ public class GroupService {
         // 그룹 멤버 조회
         List<GroupMemberEntity> groupMembers = groupMemberRepository.findAllByGroup_GroupId(groupId);
 
-        boolean alreadySent = groupRocketRepository.existsByGroup_GroupId(groupId);
-        if (alreadySent) {
-            throw new GroupConflictException("이미 해당 모임에 로켓이 전송된 이력이 있습니다.");
-        }
-
-        // 모든 멤버가 isReady == true인 GRC를 가지고 있는지 확인
+        // 모든 멤버가 준비됐는지 먼저 확인 (전송 전에)
         for (GroupMemberEntity member : groupMembers) {
             Long memberId = member.getUser().getUserId();
             boolean hasReadyContent = groupRocketContentRepository
-                    .existsByGroup_GroupIdAndUser_UserIdAndReadyTrue(groupId, memberId);
+                    .existsByGroup_GroupIdAndUser_UserIdAndReadyTrueAndGroupRocketIsNull(groupId, memberId);
 
             if (!hasReadyContent) {
                 throw new GroupConflictException("모든 멤버가 로켓 콘텐츠를 준비해야 전송할 수 있습니다. 준비되지 않은 멤버 있음: " + member.getUser().getNickname());
             }
         }
 
-        // 전송 수행
+        int maxRound = groupRocketRepository.findMaxRocketRoundByGroupId(groupId);
+        int newRound = maxRound + 1;
+
         for (GroupMemberEntity member : groupMembers) {
             UserEntity receiver = member.getUser();
 
             GroupRocketEntity rocket = GroupRocketEntity.builder()
                     .group(group)
+                    .rocketRound(newRound)
                     .receiverUser(receiver)
                     .rocketName(request.getRocketName())
                     .design(request.getDesign())
@@ -398,7 +397,7 @@ public class GroupService {
             groupRocketRepository.save(rocket);
 
             List<GroupRocketContentEntity> contents = groupRocketContentRepository
-                    .findAllByGroup_GroupIdAndUser_UserIdAndReadyTrue(groupId, receiver.getUserId());
+                    .findAllByGroup_GroupIdAndUser_UserIdAndGroupRocketIsNullAndReadyTrue(groupId, receiver.getUserId());
 
             for (GroupRocketContentEntity content : contents) {
                 content.setGroupRocket(rocket);

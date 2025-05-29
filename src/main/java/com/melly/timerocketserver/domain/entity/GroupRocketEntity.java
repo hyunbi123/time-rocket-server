@@ -23,6 +23,9 @@ public class GroupRocketEntity {
     @JoinColumn(name = "group_id")
     private GroupEntity group;
 
+    @Column(name = "rocket_round")
+    private Integer rocketRound;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id")
     private UserEntity receiverUser;
