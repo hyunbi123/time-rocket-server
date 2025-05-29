@@ -302,49 +302,49 @@ public class GroupService {
     // 모임 로켓 컨텐츠 준비
     @Transactional
     public void readyGroupRocketContent(Long groupId, Long userId, GroupContentRequest request, List<MultipartFile> files) throws IOException {
-//        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
-//                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
-//
-//        UserEntity user = userRepository.findByUserId(userId)
-//                .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
-//
-//        // 이미 작성된 컨텐츠가 있으면 가져오고, 없으면 새로 생성
-//        GroupRocketContentEntity grc = groupRocketContentRepository
-//                .findByGroup_GroupIdAndUser_UserIdAndIsDeletedFalse(groupId, userId)
-//                .orElseGet(() -> GroupRocketContentEntity.builder()
-//                        .user(user)
-//                        .content(request.getContent())
-//                        .ready(true)
-//                        .isDeleted(false)
-//                        .createdAt(LocalDateTime.now())
-//                        .build());
-//
-//        grc.setContent(request.getContent()); // 항상 갱신
-//
-//        // 파일 여러 개 저장
-//        if (files != null && !files.isEmpty()) {
-//            int order = 1;
-//            for (MultipartFile file : files) {
-//                if (!file.isEmpty()) {
-//                    // saveRocketFile 에서 저장과 고유명 생성 모두 처리
-//                    String savedPath = fileService.saveRocketFile(file);
-//
-//                    // savedPath 의 가장 마지막 / 이후의 문자열을 추출
-//                    String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
-//
-//                    RocketFileEntity rocketFile = RocketFileEntity.builder()
-//                            .originalName(file.getOriginalFilename())
-//                            .uniqueName(uniqueName)
-//                            .savedPath(savedPath)
-//                            .fileType(file.getContentType())
-//                            .fileSize(file.getSize())
-//                            .fileOrder(order++)
-//                            .build();
-//                    rocketFileRepository.save(rocketFile);
-//                }
-//            }
-//        }
-//        groupRocketContentRepository.save(grc);
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
+        UserEntity user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
+
+        GroupRocketContentEntity grc = groupRocketContentRepository
+                .findByGroup_GroupIdAndGroupRocketIsNullAndUser_UserId(groupId, userId)
+                .orElseGet(() -> GroupRocketContentEntity.builder()
+                        .groupRocket(null)
+                        .group(group)
+                        .user(user)
+                        .ready(true)
+                        .isDeleted(false)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+
+        grc.setContent(request.getContent());
+
+        // 파일 저장
+        if (files != null && !files.isEmpty()) {
+            int order = 1;
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String savedPath = fileService.saveRocketFile(file);
+                    String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
+
+                    RocketFileEntity rocketFile = RocketFileEntity.builder()
+                            .grc(grc)
+                            .originalName(file.getOriginalFilename())
+                            .uniqueName(uniqueName)
+                            .savedPath(savedPath)
+                            .fileType(file.getContentType())
+                            .fileSize(file.getSize())
+                            .fileOrder(order++)
+                            .build();
+
+                    rocketFileRepository.save(rocketFile);
+                }
+            }
+        }
+
+        groupRocketContentRepository.save(grc);
     }
 
     @Transactional
