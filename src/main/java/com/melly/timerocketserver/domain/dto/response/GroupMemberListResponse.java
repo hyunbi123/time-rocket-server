@@ -12,6 +12,7 @@ import java.util.List;
 public class GroupMemberListResponse {
     private List<MemberDto> members;
     private int MemberCount;
+    private int MemberLimit;
 
     @Getter
     @Setter

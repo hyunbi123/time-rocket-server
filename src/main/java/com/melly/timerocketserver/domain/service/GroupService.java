@@ -21,8 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,11 +35,12 @@ public class GroupService {
     private final GroupRocketRepository groupRocketRepository;
     private final GroupRocketContentRepository groupRocketContentRepository;
     private final RocketFileRepository rocketFileRepository;
+    private final GroupChestRepository groupChestRepository;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
                         GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
                         GroupRocketRepository groupRocketRepository, GroupRocketContentRepository groupRocketContentRepository,
-                        RocketFileRepository rocketFileRepository) {
+                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
@@ -50,6 +49,7 @@ public class GroupService {
         this.groupRocketRepository = groupRocketRepository;
         this.groupRocketContentRepository = groupRocketContentRepository;
         this.rocketFileRepository = rocketFileRepository;
+        this.groupChestRepository = groupChestRepository;
     }
 
     // 모임 생성
@@ -242,6 +242,9 @@ public class GroupService {
 
     // 모임 참여자 확인
     public GroupMemberListResponse getGroupMemberList(Long groupId, Long userId) {
+        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+
         GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
                 .orElseThrow(() -> new GroupConflictException("해당 모임에 참여한 적이 없습니다."));
 
@@ -262,6 +265,7 @@ public class GroupService {
         return GroupMemberListResponse.builder()
                 .members(memberDtos)
                 .MemberCount(memberCount)
+                .MemberLimit(group.getMemberLimit())
                 .build();
     }
 
@@ -403,6 +407,15 @@ public class GroupService {
                 content.setGroupRocket(rocket);
             }
             groupRocketContentRepository.saveAll(contents); // 더티 체킹으로 save 명시 안해도 무관... (트랜잭션과 영속성 컨텍스트)
+
+            // 그룹 보관함에 저장
+            GroupChestEntity chest = GroupChestEntity.builder()
+                    .groupRocket(rocket)
+                    .isPublic(false)
+                    .displayLocation(null)
+                    .isDeleted(false)
+                    .build();
+            groupChestRepository.save(chest);
         }
     }
 }

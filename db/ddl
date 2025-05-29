@@ -119,6 +119,22 @@ CREATE TABLE `group_rocket_content_tbl` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
+
+CREATE TABLE `group_chest_tbl` (
+  `group_chest_id` bigint NOT NULL AUTO_INCREMENT,
+  `group_rocket_id` bigint NOT NULL,
+  `is_public` tinyint(1) DEFAULT '0',
+  `public_at` timestamp NULL DEFAULT NULL,
+  `display_location` varchar(10) DEFAULT NULL,
+  `is_deleted` tinyint(1) DEFAULT '0',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`group_chest_id`),
+  KEY `fk_group_rocket` (`group_rocket_id`),
+  CONSTRAINT `fk_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
 CREATE TABLE `rocket_tbl` (
   `rocket_id` bigint NOT NULL AUTO_INCREMENT,
   `sender_id` bigint DEFAULT NULL,
