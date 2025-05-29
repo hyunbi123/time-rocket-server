@@ -22,8 +22,8 @@ public class RocketFileEntity {
     private RocketEntity rocket;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grc_id")
-    private GroupRocketContentEntity groupRocketContent;
+    @JoinColumn(name = "group_rocket_id")
+    private GroupRocketEntity groupRocket;
 
     @Column(name = "original_name")
     private String originalName;

@@ -302,113 +302,62 @@ public class GroupService {
     // 모임 로켓 컨텐츠 준비
     @Transactional
     public void readyGroupRocketContent(Long groupId, Long userId, GroupContentRequest request, List<MultipartFile> files) throws IOException {
-        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
-                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
-
-        UserEntity user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
-
-        // 이미 작성된 컨텐츠가 있으면 가져오고, 없으면 새로 생성
-        GroupRocketContentEntity grc = groupRocketContentRepository
-                .findByGroup_GroupIdAndUser_UserIdAndIsDeletedFalse(groupId, userId)
-                .orElseGet(() -> GroupRocketContentEntity.builder()
-                        .group(group)
-                        .user(user)
-                        .content(request.getContent())
-                        .ready(true)
-                        .isDeleted(false)
-                        .createdAt(LocalDateTime.now())
-                        .build());
-
-        grc.setContent(request.getContent()); // 항상 갱신
-
-        // 파일 여러 개 저장
-        if (files != null && !files.isEmpty()) {
-            int order = 1;
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    // saveRocketFile 에서 저장과 고유명 생성 모두 처리
-                    String savedPath = fileService.saveRocketFile(file);
-
-                    // savedPath 의 가장 마지막 / 이후의 문자열을 추출
-                    String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
-
-                    RocketFileEntity rocketFile = RocketFileEntity.builder()
-                            .groupRocketContent(grc)
-                            .originalName(file.getOriginalFilename())
-                            .uniqueName(uniqueName)
-                            .savedPath(savedPath)
-                            .fileType(file.getContentType())
-                            .fileSize(file.getSize())
-                            .fileOrder(order++)
-                            .build();
-                    rocketFileRepository.save(rocketFile);
-                }
-            }
-        }
-        groupRocketContentRepository.save(grc);
+//        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+//                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+//
+//        UserEntity user = userRepository.findByUserId(userId)
+//                .orElseThrow(() -> new UserNotFoundException("사용자 정보를 찾을 수 없습니다."));
+//
+//        // 이미 작성된 컨텐츠가 있으면 가져오고, 없으면 새로 생성
+//        GroupRocketContentEntity grc = groupRocketContentRepository
+//                .findByGroup_GroupIdAndUser_UserIdAndIsDeletedFalse(groupId, userId)
+//                .orElseGet(() -> GroupRocketContentEntity.builder()
+//                        .user(user)
+//                        .content(request.getContent())
+//                        .ready(true)
+//                        .isDeleted(false)
+//                        .createdAt(LocalDateTime.now())
+//                        .build());
+//
+//        grc.setContent(request.getContent()); // 항상 갱신
+//
+//        // 파일 여러 개 저장
+//        if (files != null && !files.isEmpty()) {
+//            int order = 1;
+//            for (MultipartFile file : files) {
+//                if (!file.isEmpty()) {
+//                    // saveRocketFile 에서 저장과 고유명 생성 모두 처리
+//                    String savedPath = fileService.saveRocketFile(file);
+//
+//                    // savedPath 의 가장 마지막 / 이후의 문자열을 추출
+//                    String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
+//
+//                    RocketFileEntity rocketFile = RocketFileEntity.builder()
+//                            .originalName(file.getOriginalFilename())
+//                            .uniqueName(uniqueName)
+//                            .savedPath(savedPath)
+//                            .fileType(file.getContentType())
+//                            .fileSize(file.getSize())
+//                            .fileOrder(order++)
+//                            .build();
+//                    rocketFileRepository.save(rocketFile);
+//                }
+//            }
+//        }
+//        groupRocketContentRepository.save(grc);
     }
 
     @Transactional
     public void sendGroupRocket(Long groupId, Long currentUserId, GroupRocketRequest request) {
-        // 리더 권한 확인
-        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
-                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
-
-        if (!group.getLeader().getUserId().equals(currentUserId)) {
-            throw new GroupConflictException("모임 리더만 전송할 수 있습니다.");
-        }
-
-        UserEntity receiver = userRepository.findByEmail(request.getReceiverEmail())
-                .orElseThrow(() -> new UserNotFoundException("수신자 이메일을 찾을 수 없습니다."));
-
-        // is_ready == true && is_deleted == false인 콘텐츠 조회
-        List<GroupRocketContentEntity> contents = groupRocketContentRepository.findByGroup_GroupIdAndReadyTrueAndIsDeletedFalse(groupId);
-        if (contents.isEmpty()) {
-            throw new GroupNotFoundException("전송할 준비된 콘텐츠가 없습니다.");
-        }
-
-        // 콘텐츠 섞기 (셔플)
-        Collections.shuffle(contents);
-
-        // 그룹 로켓 생성
-        RocketEntity rocket = RocketEntity.builder()
-                .group(group)
-                .rocketName(request.getRocketName())
-                .design(request.getDesign())
-                .receiverUser(receiver)
-                .receiverType("group")
-                .isLock(true)
-                .lockExpiredAt(request.getLockExpiredAt())
-                .content(buildMergedContent(contents))
-                .sentAt(LocalDateTime.now())
-                .build();
-        rocketRepository.save(rocket);
-
-        // 각 콘텐츠에 rocket_id 설정
-        for (GroupRocketContentEntity content : contents) {
-            content.setRocket(rocket);
-        }
-
-        // 첨부 파일 처리 (파일도 섞어서 저장하고 rocket_id에 연결)
-        if (request.getFiles() != null && !request.getFiles().isEmpty()) {
-            List<MultipartFile> shuffledFiles = new ArrayList<>(request.getFiles());
-            Collections.shuffle(shuffledFiles);
-
-            // 파일 저장하면서 RocketFileEntity 리스트를 받아옴
-            List<RocketFileEntity> fileEntities = fileService.saveGroupRocketFiles(shuffledFiles);
-
-            // rocket 연관관계 주입 및 저장
-            for (RocketFileEntity fileEntity : fileEntities) {
-                fileEntity.setRocket(rocket);
-                rocketFileRepository.save(fileEntity);
-            }
-        }
-    }
-
-    private String buildMergedContent(List<GroupRocketContentEntity> contents) {
-        return contents.stream()
-                .map(content -> content.getUser().getNickname() + ": " + content.getContent())
-                .collect(Collectors.joining("\n\n"));
+//        // 리더 권한 확인
+//        GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
+//                .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
+//
+//        if (!group.getLeader().getUserId().equals(currentUserId)) {
+//            throw new GroupConflictException("모임 리더만 전송할 수 있습니다.");
+//        }
+//
+//        UserEntity receiver = userRepository.findByEmail(request.getReceiverEmail())
+//                .orElseThrow(() -> new UserNotFoundException("수신자 이메일을 찾을 수 없습니다."));
     }
 }

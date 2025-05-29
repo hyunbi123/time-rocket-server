@@ -82,16 +82,17 @@ CREATE TABLE `group_member_tbl` (
 CREATE TABLE `group_rocket_tbl` (
   `group_rocket_id` bigint NOT NULL AUTO_INCREMENT,
   `group_id` bigint NOT NULL,
+  `receiver_id` bigint DEFAULT NULL,
   `rocket_name` varchar(255) DEFAULT NULL,
   `design` varchar(255) DEFAULT NULL,
   `is_lock` tinyint(1) DEFAULT '1',
   `lock_expired_at` timestamp NULL DEFAULT NULL,
   `sent_at` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`group_rocket_id`),
   KEY `fk_group` (`group_id`),
-  CONSTRAINT `fk_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`) ON DELETE CASCADE
+  KEY `fk_group_rocket_receiver` (`receiver_id`),
+  CONSTRAINT `fk_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_group_rocket_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `user_tbl` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

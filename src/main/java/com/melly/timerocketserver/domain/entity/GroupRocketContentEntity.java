@@ -18,12 +18,8 @@ public class GroupRocketContentEntity {
     private Long grcId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rocket_id")
-    private RocketEntity rocket;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id")
-    private GroupEntity group;
+    @JoinColumn(name = "group_rocket_id")
+    private GroupRocketEntity groupRocket;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -34,7 +30,6 @@ public class GroupRocketContentEntity {
 
     @Column(name = "is_ready")
     private Boolean ready;
-
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
