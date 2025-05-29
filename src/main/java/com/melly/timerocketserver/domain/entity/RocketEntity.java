@@ -27,10 +27,6 @@ public class RocketEntity {
     @JoinColumn(name = "receiver_id")
     private UserEntity receiverUser;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id")
-    private GroupEntity group;
-
     @Column(name="rocket_name")
     private String rocketName;
 

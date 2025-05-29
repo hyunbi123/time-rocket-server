@@ -78,9 +78,27 @@ CREATE TABLE `group_member_tbl` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
+
+CREATE TABLE `group_rocket_tbl` (
+  `group_rocket_id` bigint NOT NULL AUTO_INCREMENT,
+  `group_id` bigint NOT NULL,
+  `rocket_name` varchar(255) DEFAULT NULL,
+  `design` varchar(255) DEFAULT NULL,
+  `is_lock` tinyint(1) DEFAULT '1',
+  `lock_expired_at` timestamp NULL DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`group_rocket_id`),
+  KEY `fk_group` (`group_id`),
+  CONSTRAINT `fk_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
 CREATE TABLE `group_rocket_content_tbl` (
   `grc_id` bigint NOT NULL AUTO_INCREMENT,
-  `rocket_id` bigint DEFAULT NULL,
+  `group_rocket_id` bigint NOT NULL,
   `user_id` bigint NOT NULL,
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `is_ready` tinyint(1) DEFAULT '0',
@@ -89,11 +107,11 @@ CREATE TABLE `group_rocket_content_tbl` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`grc_id`),
-  KEY `fk_grc_rocket` (`rocket_id`),
   KEY `fk_grc_user` (`user_id`),
-  CONSTRAINT `fk_grc_rocket` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE,
+  KEY `fk_grc_group_rocket` (`group_rocket_id`),
+  CONSTRAINT `fk_grc_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_grc_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 
@@ -101,7 +119,6 @@ CREATE TABLE `rocket_tbl` (
   `rocket_id` bigint NOT NULL AUTO_INCREMENT,
   `sender_id` bigint DEFAULT NULL,
   `receiver_id` bigint DEFAULT NULL,
-  `group_id` bigint DEFAULT NULL,
   `rocket_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `design` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `is_lock` tinyint(1) DEFAULT '1',
@@ -114,18 +131,16 @@ CREATE TABLE `rocket_tbl` (
   PRIMARY KEY (`rocket_id`),
   KEY `fk_rocket_sender_user` (`sender_id`),
   KEY `fk_rocket_receiver_user` (`receiver_id`),
-  KEY `rocket_tbl_group_tbl_FK` (`group_id`),
   CONSTRAINT `fk_rocket_receiver_user` FOREIGN KEY (`receiver_id`) REFERENCES `user_tbl` (`user_id`),
-  CONSTRAINT `fk_rocket_sender_user` FOREIGN KEY (`sender_id`) REFERENCES `user_tbl` (`user_id`),
-  CONSTRAINT `rocket_tbl_group_tbl_FK` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  CONSTRAINT `fk_rocket_sender_user` FOREIGN KEY (`sender_id`) REFERENCES `user_tbl` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=296 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 
 CREATE TABLE `rocket_file_tbl` (
   `file_id` bigint NOT NULL AUTO_INCREMENT,
   `rocket_id` bigint DEFAULT NULL,
-  `grc_id` bigint DEFAULT NULL,
+  `group_rocket_id` bigint DEFAULT NULL,
   `original_name` varchar(255) DEFAULT NULL,
   `unique_name` varchar(255) DEFAULT NULL,
   `saved_path` varchar(500) DEFAULT NULL,
@@ -136,8 +151,10 @@ CREATE TABLE `rocket_file_tbl` (
   PRIMARY KEY (`file_id`),
   UNIQUE KEY `uk_unique_name` (`unique_name`),
   KEY `rocket_id` (`rocket_id`),
+  KEY `group_rocket_id` (`group_rocket_id`),
+  CONSTRAINT `rocket_file_fk_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE CASCADE,
   CONSTRAINT `rocket_file_tbl_ibfk_1` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 
