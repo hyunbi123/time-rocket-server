@@ -32,6 +32,7 @@ public class GroupChestPageResponse {
         private Long groupChestId;
         private Long groupRocketId;
         private Long groupId;
+        private String groupName;
         private String rocketName;
         private String designUrl;
 

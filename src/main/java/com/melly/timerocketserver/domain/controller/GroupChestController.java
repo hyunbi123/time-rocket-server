@@ -1,11 +1,14 @@
 package com.melly.timerocketserver.domain.controller;
 
+import com.melly.timerocketserver.domain.dto.response.GroupChestDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupChestPageResponse;
+import com.melly.timerocketserver.domain.dto.response.ReceivedChestDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.ReceivedChestPageResponse;
 import com.melly.timerocketserver.domain.service.GroupChestService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
+import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,10 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
@@ -51,6 +51,15 @@ public class GroupChestController implements ResponseController {
 
         return makeResponseEntity(HttpStatus.OK, "모임 보관함에 저장된 로켓 목록을 불러왔습니다.", chestList);
     }
+
+    // 보관함 로켓 상세 조회
+    @GetMapping("/{groupChestId}")
+    public ResponseEntity<ResponseDto> getChestDetail(@PathVariable @Min(value = 1, message = "groupChestId는 1 이상이어야 합니다.") Long groupChestId){
+        GroupChestDetailResponse chestDetail = groupChestService.getChestDetail(getUserId(), groupChestId);
+        return makeResponseEntity(HttpStatus.OK, "보관함의 로켓 상세 정보를 불러왔습니다.", chestDetail);
+    }
+
+
 
     private Long getUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

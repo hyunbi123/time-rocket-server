@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Table(name = "group_rocket_content_tbl")
 @Getter
@@ -56,4 +58,7 @@ public class GroupRocketContentEntity {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "grc", cascade = CascadeType.ALL)
+    private List<RocketFileEntity> rocketFiles;
 }
