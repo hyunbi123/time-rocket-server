@@ -27,6 +27,9 @@ public class ReceivedChestService {
         this.displayService = displayService;
     }
 
+    // 고정된 슬롯 리스트
+    private static final List<Long> DISPLAY_LOCATIONS = List.of(1L,2L,3L,4L,5L,6L,7L,8L,9L,10L);
+
     // 보관함 조회
     public ReceivedChestPageResponse getReceivedChestList(Long userId, String rocketName, Pageable pageable, String receiverType) {
         Page<ReceivedChestEntity> findEntity;
@@ -183,14 +186,18 @@ public class ReceivedChestService {
 
     // 로켓 공개 변환 시 작동하는 진열장 배치 저장 메서드
     private Long generateNextDisplayLocation(Long userId) {
-        Long maxLocation = receivedChestRepository.findMaxDisplayLocationByUserId(userId);
-        Long nextLocation = (maxLocation == null) ? 1L : maxLocation + 1;
+        // 현재 사용 중인 위치 조회
+        List<Long> usedLocations = receivedChestRepository
+                .findDisplayLocationsByUserIdAndIsPublicTrueAndIsDeletedFalse(userId);
 
-        if (nextLocation > 10L) {
-            throw new IllegalStateException("진열장에 더 이상 로켓을 배치할 수 없습니다. (최대 10개)");
+        // 빈 슬롯 찾기
+        for (Long loc : DISPLAY_LOCATIONS) {
+            if (!usedLocations.contains(loc)) {
+                return loc;
+            }
         }
 
-        return nextLocation;
+        throw new IllegalStateException("진열장에 더 이상 로켓을 배치할 수 없습니다. (최대 10개)");
     }
 
     // 보관함 로켓 논리 삭제

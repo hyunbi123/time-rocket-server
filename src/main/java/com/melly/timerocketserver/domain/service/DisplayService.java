@@ -115,25 +115,41 @@ public class DisplayService {
     }
 
     @Transactional
-    public void moveLocation(Long sourceChestId, Long targetChestId, Long userId) {
+    public void moveLocation(Long sourceChestId, Long targetChestId, Long targetDisplayLocation, Long userId) {
         ReceivedChestEntity source = receivedChestRepository.findByReceivedChestIdAndIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(sourceChestId, userId)
                 .orElseThrow(() -> new ChestNotFoundException("이동할 로켓이 진열장에 존재하지 않거나 삭제 상태입니다."));
 
-        ReceivedChestEntity target = receivedChestRepository.findByReceivedChestIdAndIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(targetChestId, userId)
-                .orElseThrow(() -> new ChestNotFoundException("이동시킬 위치의 로켓이 진열장에 존재하지 않거나 삭제 상태입니다."));
+        if (source.getDisplayLocation().equals(targetDisplayLocation)) {
+            // 같은 위치로 이동할 경우 무시
+            return;
+        }
 
-        // displayLocation 값 교환 또는 이동
-        Long sourceLoc = source.getDisplayLocation();
-        Long targetLoc = target.getDisplayLocation();
+        if (targetChestId != null) {
+            // 스왑 로직
+            ReceivedChestEntity target = receivedChestRepository.findByReceivedChestIdAndIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(targetChestId, userId)
+                    .orElseThrow(() -> new ChestNotFoundException("이동시킬 위치의 로켓이 진열장에 존재하지 않거나 삭제 상태입니다."));
 
-        // 위치 스왑
-        source.setDisplayLocation(targetLoc);
-        target.setDisplayLocation(sourceLoc);
+            Long sourceLoc = source.getDisplayLocation();
+            Long targetLoc = target.getDisplayLocation();
 
-        receivedChestRepository.save(source);
-        receivedChestRepository.save(target);
+            source.setDisplayLocation(targetLoc);
+            target.setDisplayLocation(sourceLoc);
 
-        // 진열장 캐시 갱신
+            receivedChestRepository.save(source);
+            receivedChestRepository.save(target);
+        } else {
+            // 이동만 (빈 칸으로)
+            // 위치가 사용 중인지 체크
+            boolean isOccupied = receivedChestRepository.existsByRocket_ReceiverUser_UserIdAndDisplayLocationAndIsPublicTrueAndIsDeletedFalse(userId, targetDisplayLocation);
+            if (isOccupied) {
+                throw new IllegalArgumentException("이미 해당 진열장 위치에 로켓이 존재합니다.");
+            }
+
+            source.setDisplayLocation(targetDisplayLocation);
+            receivedChestRepository.save(source);
+        }
+
+        // 캐시 갱신
         updateDisplayCache(userId);
     }
 }

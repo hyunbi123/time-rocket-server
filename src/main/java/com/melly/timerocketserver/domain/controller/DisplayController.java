@@ -42,7 +42,7 @@ public class DisplayController implements ResponseController {
     // 진열장 로켓 배치 이동
     @PatchMapping("/location")
     public ResponseEntity<ResponseDto> moveLocation(@RequestBody DisplayLocationMoveRequest request) {
-        displayService.moveLocation(request.getSourceChestId(), request.getTargetChestId(), getUserId());
+        displayService.moveLocation(request.getSourceChestId(), request.getTargetChestId(), request.getTargetDisplayLocation(), getUserId());
         return makeResponseEntity(HttpStatus.OK, "진열장의 로켓 배치이동이 완료되었습니다.", null);
     }
 
