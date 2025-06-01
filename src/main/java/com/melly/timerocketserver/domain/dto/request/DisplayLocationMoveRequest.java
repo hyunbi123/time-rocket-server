@@ -8,8 +8,10 @@ import lombok.Setter;
 @Setter
 public class DisplayLocationMoveRequest {
     @NotNull
-    private Long sourceChestId; // 이동할 로켓이 담긴 보관함 ID
-    @NotNull
-    private Long targetChestId; // 교환 대상 보관함 ID
+    private Long sourceChestId;
 
+    private Long targetChestId; // 선택적으로 존재
+
+    @NotNull
+    private Long targetDisplayLocation; // 이동할 위치 (1~10 중 하나)
 }

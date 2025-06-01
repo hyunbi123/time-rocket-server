@@ -28,9 +28,13 @@ public interface ReceivedChestRepository extends JpaRepository<ReceivedChestEnti
     // 수신 보관함 개수 조회 - 로켓 수신자 ID 기준으로 공개 상태이며 삭제되지 않은 보관함 개수 반환
     int countByRocket_ReceiverUser_UserIdAndIsPublicTrueAndIsDeletedFalse(Long userId);
 
-    // displayLocation 의 최대값 조회 - 수신자 ID 기준, 삭제되지 않은 보관함 대상
-    @Query("SELECT MAX(c.displayLocation) FROM ReceivedChestEntity c WHERE c.rocket.receiverUser.userId = :userId AND c.isDeleted = false")
-    Long findMaxDisplayLocationByUserId(@Param("userId") Long userId);
+    // displayLocation 조회 - 수신자 ID 기준, 삭제되지 않은 보관함 대상
+    @Query("SELECT r.displayLocation FROM ReceivedChestEntity r " +
+            "WHERE r.rocket.receiverUser.userId = :userId AND r.isPublic = true AND r.isDeleted = false")
+    List<Long> findDisplayLocationsByUserIdAndIsPublicTrueAndIsDeletedFalse(@Param("userId") Long userId);
+
+    // 진열장 좌표에 빈칸인지 아닌지 조회
+    boolean existsByRocket_ReceiverUser_UserIdAndDisplayLocationAndIsPublicTrueAndIsDeletedFalse(Long userId, Long displayLocation);
 
     // 진열 중인 보관함 조회 - receivedChestId 기준, 삭제되지 않고 공개 상태인 보관함 조회
     Optional<ReceivedChestEntity> findByReceivedChestIdAndIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(Long receivedChestId, Long userId);
