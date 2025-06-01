@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Table(name = "group_rocket_content_tbl")
 @Getter
@@ -18,8 +20,12 @@ public class GroupRocketContentEntity {
     private Long grcId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rocket_id")
-    private RocketEntity rocket;
+    @JoinColumn(name = "group_rocket_id")
+    private GroupRocketEntity groupRocket;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private GroupEntity group;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -29,11 +35,10 @@ public class GroupRocketContentEntity {
     private String content;
 
     @Column(name = "is_ready")
-    private boolean isReady;
-
+    private Boolean ready;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted;
+    private Boolean isDeleted;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -53,4 +58,7 @@ public class GroupRocketContentEntity {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "grc", cascade = CascadeType.ALL)
+    private List<RocketFileEntity> rocketFiles;
 }

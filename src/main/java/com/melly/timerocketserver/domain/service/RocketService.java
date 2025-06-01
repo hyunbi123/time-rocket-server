@@ -65,7 +65,6 @@ public class RocketService {
                 .receiverType(rocketReceiverType)
                 .senderUser(sender)
                 .receiverUser(receiver)
-                .group(null)
                 .content(rocketContent)
                 .isLock(true)
                 .isTemp(false)
@@ -149,7 +148,6 @@ public class RocketService {
         tempRocket.setReceiverType(rocketReceiverType);
         tempRocket.setSenderUser(sender);
         tempRocket.setReceiverUser(receiver);
-        tempRocket.setGroup(null);
         tempRocket.setContent(rocketContent);
         tempRocket.setIsLock(null);
         tempRocket.setIsTemp(true);

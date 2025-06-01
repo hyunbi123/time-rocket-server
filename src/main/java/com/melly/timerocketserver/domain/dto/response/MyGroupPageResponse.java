@@ -1,8 +1,8 @@
 package com.melly.timerocketserver.domain.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -10,7 +10,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GroupPageResponse {
+public class MyGroupPageResponse {
+
     private List<GroupDto> groups;
     private int currentPage;
     private int pageSize;
@@ -28,11 +29,9 @@ public class GroupPageResponse {
         private String groupName;
         private String theme;
         private String description;
-        private String leaderNickname;
         private Integer memberLimit;
-        private Integer currentMemberCount;
-        @JsonProperty("isPrivate")
-        private Boolean isPrivate;
+        private Integer memberCount;
         private String backgroundImage;
+        private LocalDateTime createdAt;
     }
 }

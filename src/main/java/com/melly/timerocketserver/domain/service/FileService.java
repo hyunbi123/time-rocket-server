@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,6 +35,9 @@ public class FileService {
     @Value("${file.background-image}")
     private String uploadDir2;
 
+    @Value("${file.group-rocket-file}")
+    private String uploadDir3;
+
     // 로컬 디스크 저장
     public String saveRocketFile(MultipartFile file) throws IOException {
         return saveFile(file, uploadDir1);
@@ -41,6 +46,48 @@ public class FileService {
     // 로컬 디스크 저장
     public String saveBackgroundImageFile(MultipartFile file) throws IOException {
         return saveFile(file, uploadDir2);
+    }
+
+    public List<RocketFileEntity> saveGroupRocketFiles(List<MultipartFile> files) {
+        List<RocketFileEntity> fileEntities = new ArrayList<>();
+
+        int fileOrder = 0;
+        for (MultipartFile file : files) {
+            try {
+                // 디렉토리 경로 설정
+                Path uploadPath = Paths.get(uploadDir3);
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                // 고유 파일명 생성
+                String originalFilename = file.getOriginalFilename();
+                String uniqueFilename = generateUniqueFileName(file);
+                String fileType = file.getContentType();
+                Long fileSize = file.getSize();
+
+                // 실제 파일 저장
+                Path filePath = uploadPath.resolve(uniqueFilename);
+                Files.copy(file.getInputStream(), filePath);
+
+                // Entity 생성 (rocket, groupRocketContent는 외부에서 주입)
+                RocketFileEntity fileEntity = RocketFileEntity.builder()
+                        .originalName(originalFilename)
+                        .uniqueName(uniqueFilename)
+                        .savedPath(uploadDir3 + "/" + uniqueFilename) // 로컬 저장 경로
+                        .fileType(fileType)
+                        .fileSize(fileSize)
+                        .fileOrder(fileOrder++) // 순서 부여
+                        .build();
+
+                fileEntities.add(fileEntity);
+
+            } catch (IOException e) {
+                throw new RuntimeException("파일 저장 중 오류 발생: " + file.getOriginalFilename(), e);
+            }
+        }
+
+        return fileEntities;
     }
 
     private String saveFile(MultipartFile file, String uploadDir) throws IOException {
