@@ -7,6 +7,7 @@ import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
+import com.melly.timerocketserver.domain.dto.response.MyGroupPageResponse;
 import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
@@ -60,6 +61,21 @@ public class GroupController implements ResponseController {
         GroupPageResponse groupList = groupService.getGroupList(pageable, groupName, theme);
 
         return makeResponseEntity(HttpStatus.OK, "모임의 목록을 조회하는데 성공했습니다.", groupList);
+    }
+
+    // 본인이 참여한 모임 조회
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDto> getMyGroups(@RequestParam(defaultValue = "1") int page,
+                                                   @RequestParam(defaultValue = "10") int size,
+                                                   @RequestParam(name = "group-name", defaultValue = "") String groupName,
+                                                   @RequestParam(name = "group-theme", defaultValue = "") String theme) {
+        page = Math.max(page, 1);
+        size = Math.max(size, 1);
+        Pageable pageable = PageRequest.of(page - 1, size);
+
+        MyGroupPageResponse myGroups = groupService.getMyGroups(getCurrentUserId(), pageable, groupName, theme);
+
+        return makeResponseEntity(HttpStatus.OK, "내가 참여한 모임 목록 조회에 성공했습니다.", myGroups);
     }
 
     // 모임 상세 조회

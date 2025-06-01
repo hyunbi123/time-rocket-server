@@ -7,6 +7,7 @@ import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
 import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
 import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
+import com.melly.timerocketserver.domain.dto.response.MyGroupPageResponse;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.*;
 import com.melly.timerocketserver.global.exception.GroupConflictException;
@@ -125,6 +126,7 @@ public class GroupService {
                 .map(find -> GroupPageResponse.GroupDto.builder()
                         .groupId(find.getGroupId())
                         .groupName(find.getGroupName())
+                        .theme(find.getTheme() != null ? find.getTheme().getTheme() : "미선택")
                         .description(find.getDescription())
                         .leaderNickname(find.getLeader().getNickname())
                         .memberLimit(find.getMemberLimit())
@@ -154,6 +156,43 @@ public class GroupService {
                 .build();
     }
 
+    // 본인이 참여한 모임 조회
+    public MyGroupPageResponse getMyGroups(Long currentUserId, Pageable pageable, String groupName, String theme) {
+        Slice<GroupEntity> findEntity = groupMemberRepository.findMyGroups(currentUserId, groupName, theme, pageable);
+
+        List<MyGroupPageResponse.GroupDto> groupDtoList = findEntity.getContent().stream()
+                .map(find -> MyGroupPageResponse.GroupDto.builder()
+                        .groupId(find.getGroupId())
+                        .groupName(find.getGroupName())
+                        .theme(find.getTheme() != null ? find.getTheme().getTheme() : "미선택")
+                        .description(find.getDescription())
+                        .memberCount(find.getCurrentMemberCount())
+                        .memberLimit(find.getMemberLimit())
+                        .backgroundImage(find.getBackgroundImage())
+                        .createdAt(find.getCreatedAt())
+                        .build())
+                .toList();
+
+        // 동적으로 정렬 기준과 정렬 방향을 반환
+        String sortBy = findEntity.getSort().stream()
+                .map(order -> order.getProperty()) // 정렬 기준 필드명만 추출
+                .collect(Collectors.joining(","));
+
+        // 동적으로 정렬 방향을 반환
+        String sortDirection = findEntity.getSort().stream()
+                .map(order -> order.getDirection().name()) // 정렬 방향 추출 (ASC, DESC)
+                .collect(Collectors.joining(","));
+
+        return MyGroupPageResponse.builder()
+                .groups(groupDtoList)
+                .currentPage(findEntity.getNumber())
+                .pageSize(findEntity.getSize())
+                .hasNext(findEntity.hasNext())
+                .sortBy(sortBy)
+                .sortDirection(sortDirection)
+                .build();
+    }
+
     // 모임 상세 조회
     public GroupDetailResponse getGroupDetail(Long groupId) {
         GroupEntity findEntity = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
@@ -169,7 +208,7 @@ public class GroupService {
                 .backgroundImage(findEntity.getBackgroundImage())
                 .build();
     }
-    
+
     // 모임 참가
     @Transactional
     public void joinGroup(Long groupId, Long userId, JoinGroupPasswordRequest request) {
