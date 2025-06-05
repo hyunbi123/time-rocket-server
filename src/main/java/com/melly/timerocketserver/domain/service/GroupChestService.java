@@ -28,9 +28,9 @@ public class GroupChestService {
         // 그룹 로켓 이름이 존재하면 이름으로 검색, 없으면 전체 조회
         Page<GroupChestEntity> findEntity;
         if (groupRocketName != null && !groupRocketName.isBlank()) {
-            findEntity = groupChestRepository.findByGroupRocket_ReceiverUser_UserIdAndGroupRocket_RocketNameContaining(userId, groupRocketName, pageable);
+            findEntity = groupChestRepository.findByIsDeletedFalseAndGroupRocket_ReceiverUser_UserIdAndGroupRocket_RocketNameContaining(userId, groupRocketName, pageable);
         } else {
-            findEntity = groupChestRepository.findByGroupRocket_ReceiverUser_UserId(userId, pageable);
+            findEntity = groupChestRepository.findByIsDeletedFalseAndGroupRocket_ReceiverUser_UserId(userId, pageable);
         }
 
         List<GroupChestPageResponse.GroupChestDto> groupChestDtoList = findEntity.getContent().stream()
