@@ -21,7 +21,5 @@ public class GroupRocketRequest {
     @NotNull(message = "잠금 해제일은 필수 항목입니다.")
     private LocalDateTime lockExpiredAt;
 
-    private String receiverEmail;
-
     private List<MultipartFile> files;
 }
