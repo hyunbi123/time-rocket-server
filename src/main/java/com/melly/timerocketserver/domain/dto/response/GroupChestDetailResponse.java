@@ -13,7 +13,6 @@ import java.util.List;
 @Builder
 public class GroupChestDetailResponse {
     private Long groupRocketId;
-    private String groupName;
     private String rocketName;
     private String designUrl;
     private LocalDateTime sentAt;

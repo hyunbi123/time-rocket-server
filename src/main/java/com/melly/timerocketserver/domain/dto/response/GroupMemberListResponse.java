@@ -1,5 +1,6 @@
 package com.melly.timerocketserver.domain.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class GroupMemberListResponse {
         private Long groupMemberId;
         private Long userId;
         private String nickname;
+        @JsonProperty("isKicked")
         private boolean isKicked;
         private boolean isSavedRocket;
     }

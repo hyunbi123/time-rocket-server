@@ -29,8 +29,9 @@ public class MyGroupPageResponse {
         private String groupName;
         private String theme;
         private String description;
+        private String leaderNickname;
         private Integer memberLimit;
-        private Integer memberCount;
+        private Integer currentMemberCount;
         private String backgroundImage;
         private LocalDateTime createdAt;
     }
