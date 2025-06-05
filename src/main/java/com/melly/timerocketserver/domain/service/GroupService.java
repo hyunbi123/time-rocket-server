@@ -16,6 +16,7 @@ import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,11 +38,13 @@ public class GroupService {
     private final GroupRocketContentRepository groupRocketContentRepository;
     private final RocketFileRepository rocketFileRepository;
     private final GroupChestRepository groupChestRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
                         GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
                         GroupRocketRepository groupRocketRepository, GroupRocketContentRepository groupRocketContentRepository,
-                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository) {
+                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository,
+                        SimpMessagingTemplate messagingTemplate) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
@@ -51,6 +54,7 @@ public class GroupService {
         this.groupRocketContentRepository = groupRocketContentRepository;
         this.rocketFileRepository = rocketFileRepository;
         this.groupChestRepository = groupChestRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     // 모임 생성
@@ -456,5 +460,10 @@ public class GroupService {
                     .build();
             groupChestRepository.save(chest);
         }
+    }
+
+    // groupId 로 삭제되지 않은 모임 조회
+    public GroupEntity findByIsDeletedFalseAndGroupId(Long groupId) {
+        return groupRepository.findByIsDeletedFalseAndGroupId(groupId).orElseThrow(() -> new GroupNotFoundException("해당 모임은 삭제되었거나 존재하지 않습니다."));
     }
 }

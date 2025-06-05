@@ -1,24 +1,23 @@
 package com.melly.timerocketserver.global.config;
 
-import com.melly.timerocketserver.websocket.handler.ChatWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.*;
 
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final ChatWebSocketHandler chatWebSocketHandler;
-
-    public WebSocketConfig(ChatWebSocketHandler chatWebSocketHandler) {
-        this.chatWebSocketHandler = chatWebSocketHandler;
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws").setAllowedOriginPatterns("*");
     }
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketHandler, "/ws/chat")
-                .setAllowedOrigins("*"); // 개발 중엔 * 허용, 배포 시에는 도메인 제한
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        // 클라이언트 구독 경로
+        config.enableSimpleBroker("/topic");
+        // 클라이언트가 메시지 전송하는 prefix
+        config.setApplicationDestinationPrefixes("/app");
     }
 }
