@@ -134,6 +134,14 @@ public class GroupController implements ResponseController {
         return makeResponseEntity(HttpStatus.OK, "모임 로켓을 성공적으로 전송했습니다.", null);
     }
 
+    // 모임 로켓 잠금 해제
+    @PatchMapping("/{groupId}/rockets/{groupRocketId}/unlock")
+    public ResponseEntity<ResponseDto> unlockGroupRocket(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
+                                                         @PathVariable @Min(value = 1, message = "groupRocketId는 1 이상이어야 합니다.") Long groupRocketId){
+        groupService.unlockGroupRocket(getCurrentUserId(), groupRocketId);
+        return makeResponseEntity(HttpStatus.OK, "모임 로켓의 잠금이 해제되었습니다.", null);
+    }
+
 //    // 모임 실시간 채팅 히스토리 조회
 //    @GetMapping("/{groupId}/chats/history")
 //    public ResponseEntity<ResponseDto> getChatHistory(@PathVariable Long groupId) {

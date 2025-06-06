@@ -16,7 +16,6 @@ import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -463,5 +462,24 @@ public class GroupService {
     // groupId 로 삭제되지 않은 모임 조회
     public GroupEntity findByIsDeletedFalseAndGroupId(Long groupId) {
         return groupRepository.findByIsDeletedFalseAndGroupId(groupId).orElseThrow(() -> new GroupNotFoundException("해당 모임은 삭제되었거나 존재하지 않습니다."));
+    }
+
+    // 모임 로켓 잠금 해제
+    public void unlockGroupRocket(Long currentUserId, Long groupRocketId) {
+        GroupRocketEntity findEntity = groupRocketRepository.findByGroupRocketIdAndIsLockTrue(groupRocketId)
+                .orElseThrow(() -> new GroupNotFoundException("존재하지 않는 모임 로켓입니다."));
+
+        if (!findEntity.getReceiverUser().getUserId().equals(currentUserId)) {
+            throw new IllegalStateException("해당 로켓에 대한 권한이 없습니다.");
+        }
+
+        // 잠금 해제 가능 조건: lockExpiredAt가 현재 시각 이전 또는 같음
+        if (findEntity.getLockExpiredAt().isAfter(LocalDateTime.now())) {
+            throw new IllegalStateException("해당 로켓의 잠금 해제일이 아직 지나지 않았습니다.");
+        }
+
+        // 모임 로켓 잠금 해제 수행
+        findEntity.setIsLock(false); // '잠금 해제' 상태로 명시적으로 설정
+        groupRocketRepository.save(findEntity);
     }
 }
