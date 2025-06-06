@@ -1,7 +1,5 @@
 package com.melly.timerocketserver.websocket.controller;
 
-import com.melly.timerocketserver.domain.entity.UserEntity;
-import com.melly.timerocketserver.domain.repository.UserRepository;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
 import com.melly.timerocketserver.websocket.dto.GroupChatNotificationDto;
@@ -13,7 +11,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;

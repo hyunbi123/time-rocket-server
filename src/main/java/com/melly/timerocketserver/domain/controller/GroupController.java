@@ -4,10 +4,7 @@ import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
 import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
 import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
 import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
-import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
-import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
-import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
-import com.melly.timerocketserver.domain.dto.response.MyGroupPageResponse;
+import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
@@ -17,6 +14,7 @@ import com.melly.timerocketserver.websocket.service.GroupChatService;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -134,12 +132,22 @@ public class GroupController implements ResponseController {
         return makeResponseEntity(HttpStatus.OK, "모임 로켓을 성공적으로 전송했습니다.", null);
     }
 
-//    // 모임 실시간 채팅 히스토리 조회
-//    @GetMapping("/{groupId}/chats/history")
-//    public ResponseEntity<ResponseDto> getChatHistory(@PathVariable Long groupId) {
-//        List<GroupChatMsgResponse> history = groupChatService.getChatHistory(groupId);
-//        return makeResponseEntity(HttpStatus.OK, "히스토리 조회 성공", history);
-//    }
+    // 모임 로켓 잠금 해제
+    @PatchMapping("/{groupId}/rockets/{groupRocketId}/unlock")
+    public ResponseEntity<ResponseDto> unlockGroupRocket(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
+                                                         @PathVariable @Min(value = 1, message = "groupRocketId는 1 이상이어야 합니다.") Long groupRocketId){
+        groupService.unlockGroupRocket(getCurrentUserId(), groupRocketId);
+        return makeResponseEntity(HttpStatus.OK, "모임 로켓의 잠금이 해제되었습니다.", null);
+    }
+
+    // 모임 실시간 채팅 히스토리 조회
+    @GetMapping("/{groupId}/chats/history")
+    public ResponseEntity<ResponseDto> getChatHistory(@PathVariable Long groupId,
+                                                      @RequestParam(required = false) Long beforeMessageId,
+                                                      @RequestParam(defaultValue = "10") int size) {
+        GroupChatHistoryResponse history = groupService.getChatHistory(groupId, beforeMessageId != null ? beforeMessageId : Long.MAX_VALUE, size);
+        return makeResponseEntity(HttpStatus.OK, "히스토리 조회 성공", history);
+    }
 
     private Long getCurrentUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

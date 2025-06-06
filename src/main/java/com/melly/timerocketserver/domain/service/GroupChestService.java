@@ -1,16 +1,15 @@
 package com.melly.timerocketserver.domain.service;
 
 import com.melly.timerocketserver.domain.dto.response.*;
-import com.melly.timerocketserver.domain.entity.GroupChestEntity;
-import com.melly.timerocketserver.domain.entity.GroupRocketContentEntity;
-import com.melly.timerocketserver.domain.entity.GroupRocketEntity;
-import com.melly.timerocketserver.domain.entity.RocketFileEntity;
+import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.GroupChestRepository;
 import com.melly.timerocketserver.global.exception.ChestNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,10 +17,15 @@ import java.util.stream.Stream;
 @Service
 public class GroupChestService {
     private final GroupChestRepository groupChestRepository;
+    private final DisplayService displayService;
 
-    public GroupChestService(GroupChestRepository groupChestRepository) {
+    public GroupChestService(GroupChestRepository groupChestRepository, DisplayService displayService) {
         this.groupChestRepository = groupChestRepository;
+        this.displayService = displayService;
     }
+
+    // 고정된 슬롯 리스트
+    private static final List<Long> DISPLAY_LOCATIONS = List.of(1L,2L,3L,4L,5L,6L,7L,8L,9L,10L);
 
     // 모임 로켓 조회
     public GroupChestPageResponse getGroupChestList(Long userId, String groupRocketName, Pageable pageable) {
@@ -75,7 +79,7 @@ public class GroupChestService {
     public GroupChestDetailResponse getChestDetail(Long userId, Long groupChestId) {
         GroupChestEntity groupChest = groupChestRepository
                 .findByGroupChestIdAndIsDeletedFalseAndGroupRocket_ReceiverUser_UserId(groupChestId, userId)
-                .orElseThrow(() -> new ChestNotFoundException("해당 그룹 보관함이 없거나 삭제된 상태입니다."));
+                .orElseThrow(() -> new ChestNotFoundException("해당 모임 보관함이 없거나 삭제된 상태입니다."));
 
         GroupRocketEntity rocket = groupChest.getGroupRocket();
         boolean isLocked = rocket.getIsLock();
@@ -138,5 +142,76 @@ public class GroupChestService {
                         .uploadedAt(file.getUploadedAt())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+//    // 모임 보관함 공개 여부 변경 메서드
+//    @Transactional
+//    public void toggleVisibility(Long userId, Long groupChestId){
+//        GroupChestEntity findChest = groupChestRepository.findByGroupChestIdAndIsDeletedFalseAndGroupRocket_ReceiverUser_UserId(groupChestId, userId)
+//                .orElseThrow(() -> new ChestNotFoundException("해당 모임 보관함이 없거나 삭제된 상태입니다."));
+//
+//        GroupRocketEntity rocket = findChest.getGroupRocket();
+//
+//        if(rocket.getIsLock()){
+//            throw new IllegalStateException("해당 로켓은 잠금이 해제되지 않았습니다.");
+//        }
+//
+//        boolean willBePublic = !findChest.getIsPublic();
+//
+//        if (willBePublic) {
+//            // 공개 처리
+//            int publicCount = groupChestRepository.countByGroupRocket_ReceiverUser_UserIdAndIsPublicTrueAndIsDeletedFalse(userId);
+//
+//            if (publicCount >= 10) {
+//                throw new IllegalArgumentException("회원당 진열장에 들어갈 로켓 갯수는 최대 10개입니다.");
+//            }
+//            findChest.setIsPublic(true);
+//            findChest.setPublicAt(LocalDateTime.now());
+//            // 공개 시 진열장 위치 배정
+//            Long displayLoc = generateNextDisplayLocation(userId);
+//            findChest.setDisplayLocation(displayLoc);
+//        } else {
+//            // 비공개 처리
+//            findChest.setIsPublic(false);
+//            findChest.setPublicAt(null);
+//            findChest.setDisplayLocation(null);
+//        }
+//
+//        groupChestRepository.save(findChest);
+//        // 진열장 캐시 갱신
+//        displayService.updateDisplayCache(findChest.getGroupRocket().getReceiverUser().getUserId());
+//    }
+//
+//    // 로켓 공개 변환 시 작동하는 진열장 배치 저장 메서드
+//    private Long generateNextDisplayLocation(Long userId) {
+//        // 현재 사용 중인 위치 조회
+//        List<Long> usedLocations = groupChestRepository
+//                .findDisplayLocationsByUserIdAndIsPublicTrueAndIsDeletedFalse(userId);
+//
+//        // 빈 슬롯 찾기
+//        for (Long loc : DISPLAY_LOCATIONS) {
+//            if (!usedLocations.contains(loc)) {
+//                return loc;
+//            }
+//        }
+//
+//        throw new IllegalStateException("진열장에 더 이상 로켓을 배치할 수 없습니다. (최대 10개)");
+//    }
+
+    // 모임 보관함 로켓 논리 삭제
+    @Transactional
+    public void softDeleteChest(Long userId, Long groupChestId) {
+        GroupChestEntity findChest = groupChestRepository.findByGroupChestIdAndIsDeletedFalseAndGroupRocket_ReceiverUser_UserId(groupChestId, userId)
+                .orElseThrow(() -> new ChestNotFoundException("해당 모임 보관함이 없거나 삭제된 상태입니다."));
+        // 논리 삭제
+        if(!findChest.getIsDeleted()){
+            findChest.setIsDeleted(true);
+            findChest.setDeletedAt(LocalDateTime.now());
+            findChest.setDisplayLocation(null);
+            findChest.setIsPublic(false);
+            findChest.setPublicAt(null);
+        }
+        groupChestRepository.save(findChest);
+        displayService.updateDisplayCache(findChest.getGroupRocket().getReceiverUser().getUserId());
     }
 }

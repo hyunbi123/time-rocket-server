@@ -1,10 +1,9 @@
 package com.melly.timerocketserver.global.jwt;
 
 import com.melly.timerocketserver.domain.entity.UserEntity;
+import com.melly.timerocketserver.domain.repository.UserRepository;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
-import com.melly.timerocketserver.domain.repository.UserRepository;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

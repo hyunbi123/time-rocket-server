@@ -54,11 +54,24 @@ public class GroupChestController implements ResponseController {
 
     // 보관함 로켓 상세 조회
     @GetMapping("/{groupChestId}")
-    public ResponseEntity<ResponseDto> getChestDetail(@PathVariable @Min(value = 1, message = "groupChestId는 1 이상이어야 합니다.") Long groupChestId){
+    public ResponseEntity<ResponseDto> getGroupChestDetail(@PathVariable @Min(value = 1, message = "groupChestId는 1 이상이어야 합니다.") Long groupChestId){
         GroupChestDetailResponse chestDetail = groupChestService.getChestDetail(getUserId(), groupChestId);
         return makeResponseEntity(HttpStatus.OK, "보관함의 로켓 상세 정보를 불러왔습니다.", chestDetail);
     }
 
+//    // 보관함 로켓 공개 여부 변경
+//    @PatchMapping("/{groupChestId}/visibility")
+//    public ResponseEntity<ResponseDto> toggleVisibility(@PathVariable @Min(value = 1, message = "groupChestId는 1 이상이어야 합니다.") Long groupChestId){
+//        groupChestService.toggleVisibility(getUserId(), groupChestId);
+//        return makeResponseEntity(HttpStatus.OK, "로켓의 공개 여부가 변경되었습니다.", null);
+//    }
+
+    // 보관함 로켓 논리 삭제
+    @PatchMapping("/{groupChestId}/deleted-flag")
+    public ResponseEntity<ResponseDto> softDeleteGroupChest(@PathVariable @Min(value = 1, message = "groupChestId는 1 이상이어야 합니다.") Long groupChestId){
+        groupChestService.softDeleteChest(getUserId(), groupChestId);
+        return makeResponseEntity(HttpStatus.OK, "해당 로켓이 삭제되었습니다.", null);
+    }
 
 
     private Long getUserId() {
