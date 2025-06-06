@@ -205,3 +205,18 @@ CREATE TABLE `received_chest_tbl` (
   KEY `rocket_id` (`rocket_id`),
   CONSTRAINT `received_chest_tbl_ibfk_1` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+CREATE TABLE `group_chat_message_tbl` (
+  `chat_message_id` bigint NOT NULL AUTO_INCREMENT,
+  `group_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `message` text COLLATE utf8mb4_general_ci NOT NULL,
+  `sent_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`chat_message_id`),
+  KEY `fk_chat_group` (`group_id`),
+  KEY `fk_chat_user` (`user_id`),
+  CONSTRAINT `fk_chat_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`),
+  CONSTRAINT `fk_chat_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
