@@ -27,6 +27,7 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -74,7 +75,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/","/api/users","/api/users/login","/api/users/logout","/api/tokens/refresh",
                                 "/api/users/duplicate-nickname/**","/api/users/profile","/api/emails/**", "/images/**",
-                                "/api/files/**").permitAll()
+                                "/api/files/**", "/ws/**","/app/**", "/topic/**").permitAll()
                         .requestMatchers("/api/admins/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling((exceptions) -> {
@@ -118,7 +119,10 @@ public class SecurityConfig {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration configuration = new CorsConfiguration();
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));    // 프론트 서버
+                        configuration.setAllowedOrigins(Arrays.asList(
+                                "http://localhost:5173",
+                                "https://cdiptangshu.github.io"
+                        ));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));

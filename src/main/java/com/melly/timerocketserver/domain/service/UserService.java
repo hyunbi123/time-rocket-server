@@ -115,4 +115,15 @@ public class UserService {
         userEntity.setDeletedAt(LocalDateTime.now());
         userRepository.save(userEntity);
     }
+
+    // user_id 로 회원 닉네임 찾기
+    public String findNicknameByUserId(Long userId) {
+        return userRepository.findNicknameByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException("해당 회원은 존재하지 않습니다."));
+    }
+
+    // // user_id 로 회원 객체 찾기
+    public UserEntity findByUserId(Long userId){
+        return userRepository.findByUserId(userId).orElseThrow(() -> new UserNotFoundException("해당 회원은 존재하지 않습니다."));
+    }
 }

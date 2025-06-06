@@ -1,24 +1,47 @@
 package com.melly.timerocketserver.global.config;
 
-import com.melly.timerocketserver.websocket.handler.ChatWebSocketHandler;
+import com.melly.timerocketserver.domain.repository.UserRepository;
+import com.melly.timerocketserver.global.jwt.JwtUtil;
+import com.melly.timerocketserver.websocket.AuthChannelInterceptor;
+import com.melly.timerocketserver.websocket.HttpHandshakeInterceptor;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.ChannelRegistration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.*;
 
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final ChatWebSocketHandler chatWebSocketHandler;
+    private final AuthChannelInterceptor authChannelInterceptor;
 
-    public WebSocketConfig(ChatWebSocketHandler chatWebSocketHandler) {
-        this.chatWebSocketHandler = chatWebSocketHandler;
+    public WebSocketConfig(AuthChannelInterceptor authChannelInterceptor) {
+        this.authChannelInterceptor = authChannelInterceptor;
+    }
+
+    private static final String ENDPOINT = "/ws";
+    private static final String SIMPLE_BROKER = "/topic";
+    private static final String PUBLISH = "/app";
+
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker(SIMPLE_BROKER);
+        registry.setApplicationDestinationPrefixes(PUBLISH);
     }
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(chatWebSocketHandler, "/ws/chat")
-                .setAllowedOrigins("*"); // 개발 중엔 * 허용, 배포 시에는 도메인 제한
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint(ENDPOINT)
+                .addInterceptors(new HttpHandshakeInterceptor())
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor().corePoolSize(4);
+        registration.interceptors(authChannelInterceptor);
+    }
+
+
 }

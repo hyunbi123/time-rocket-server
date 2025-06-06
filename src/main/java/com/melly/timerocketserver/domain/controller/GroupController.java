@@ -12,6 +12,8 @@ import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
+import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
+import com.melly.timerocketserver.websocket.service.GroupChatService;
 import jakarta.validation.constraints.Min;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -131,6 +133,13 @@ public class GroupController implements ResponseController {
         groupService.sendGroupRocket(groupId, getCurrentUserId(), request);
         return makeResponseEntity(HttpStatus.OK, "모임 로켓을 성공적으로 전송했습니다.", null);
     }
+
+//    // 모임 실시간 채팅 히스토리 조회
+//    @GetMapping("/{groupId}/chats/history")
+//    public ResponseEntity<ResponseDto> getChatHistory(@PathVariable Long groupId) {
+//        List<GroupChatMsgResponse> history = groupChatService.getChatHistory(groupId);
+//        return makeResponseEntity(HttpStatus.OK, "히스토리 조회 성공", history);
+//    }
 
     private Long getCurrentUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

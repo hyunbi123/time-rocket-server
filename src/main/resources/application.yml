@@ -96,3 +96,7 @@ file:
   rocket-file: C:/time_rocket/images/rocket_file
   background-image: C:/time_rocket/images/background_image
   group-rocket-file: C:/time_rocket/images/group_rocket_file
+
+#logging:
+#  level.org.springframework.web: DEBUG
+#  level.org.springframework.security: DEBUG
