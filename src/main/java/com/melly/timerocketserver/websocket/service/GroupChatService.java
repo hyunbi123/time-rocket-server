@@ -22,7 +22,7 @@ public class GroupChatService {
 
 
     public GroupChatService(UserService userService, GroupChatMsgRepository chatRepository,
-                            SimpMessagingTemplate messagingTemplate, GroupService groupService) {
+                            GroupService groupService) {
         this.userService = userService;
         this.chatRepository = chatRepository;
         this.groupService = groupService;
@@ -71,7 +71,7 @@ public class GroupChatService {
         return dto;
     }
 
-    // 모임 참여 후 입장 메시지
+    // 모임 퇴장 메시지
     public GroupChatNotificationDto createExitMessage(Long groupId, Long currentUserId) {
         UserEntity findEntity = userService.findByUserId(currentUserId);
         String nickname = findEntity.getNickname();
@@ -80,7 +80,7 @@ public class GroupChatService {
         dto.setGroupId(groupId);
         dto.setUserId(findEntity.getUserId());
         dto.setNickname(nickname);
-        dto.setMessage(nickname + "님이 모임에 참여했습니다.");
+        dto.setMessage(nickname + "님이 모임에서 나갔습니다.");
 
         return dto;
     }

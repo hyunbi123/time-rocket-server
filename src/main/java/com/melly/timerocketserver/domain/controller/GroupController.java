@@ -35,11 +35,9 @@ import java.util.List;
 @RequestMapping("/api/groups")
 public class GroupController implements ResponseController {
     private final GroupService groupService;
-    private final GroupChatService groupChatService;
 
-    public GroupController(GroupService groupService, GroupChatService groupChatService){
+    public GroupController(GroupService groupService){
         this.groupService = groupService;
-        this.groupChatService = groupChatService;
     }
 
     // 모임 생성

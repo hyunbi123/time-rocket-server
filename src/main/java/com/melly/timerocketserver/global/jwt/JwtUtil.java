@@ -46,4 +46,23 @@ public class JwtUtil {
                 .compact();
     }
 
+    // "토큰이 유효한지"만 빠르게 검사
+    public boolean validate(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);  // 서명 검증 및 만료 검사 포함
+            return true;  // 정상 검증됨
+        } catch (io.jsonwebtoken.security.SecurityException | io.jsonwebtoken.MalformedJwtException e) {
+            // 서명 오류, 토큰 변조 등
+            return false;
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            // 토큰 만료
+            return false;
+        } catch (Exception e) {
+            // 기타 오류
+            return false;
+        }
+    }
 }

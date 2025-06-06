@@ -38,13 +38,11 @@ public class GroupService {
     private final GroupRocketContentRepository groupRocketContentRepository;
     private final RocketFileRepository rocketFileRepository;
     private final GroupChestRepository groupChestRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
                         GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
                         GroupRocketRepository groupRocketRepository, GroupRocketContentRepository groupRocketContentRepository,
-                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository,
-                        SimpMessagingTemplate messagingTemplate) {
+                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
@@ -54,7 +52,6 @@ public class GroupService {
         this.groupRocketContentRepository = groupRocketContentRepository;
         this.rocketFileRepository = rocketFileRepository;
         this.groupChestRepository = groupChestRepository;
-        this.messagingTemplate = messagingTemplate;
     }
 
     // 모임 생성

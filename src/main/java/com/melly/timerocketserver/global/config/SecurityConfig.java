@@ -75,7 +75,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/","/api/users","/api/users/login","/api/users/logout","/api/tokens/refresh",
                                 "/api/users/duplicate-nickname/**","/api/users/profile","/api/emails/**", "/images/**",
-                                "/api/files/**", "/ws/**", "/app/**", "/topic/**").permitAll()
+                                "/api/files/**", "/ws/**","/app/**", "/topic/**").permitAll()
                         .requestMatchers("/api/admins/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling((exceptions) -> {
