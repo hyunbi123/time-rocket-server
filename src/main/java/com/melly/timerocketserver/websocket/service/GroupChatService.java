@@ -9,7 +9,6 @@ import com.melly.timerocketserver.domain.service.UserService;
 import com.melly.timerocketserver.websocket.dto.GroupChatNotificationDto;
 import com.melly.timerocketserver.websocket.dto.request.GroupChatMsgRequest;
 import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

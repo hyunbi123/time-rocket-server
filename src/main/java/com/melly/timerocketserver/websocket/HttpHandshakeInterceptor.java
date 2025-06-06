@@ -1,16 +1,11 @@
 package com.melly.timerocketserver.websocket;
 
-import com.melly.timerocketserver.global.jwt.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
-import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j

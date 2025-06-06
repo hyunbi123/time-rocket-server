@@ -1,11 +1,11 @@
 package com.melly.timerocketserver.domain.controller;
 
 import com.melly.timerocketserver.domain.dto.request.PasswordRequestDto;
+import com.melly.timerocketserver.domain.dto.request.SignUpRequestDto;
 import com.melly.timerocketserver.domain.dto.request.UpdateStatusRequestDto;
+import com.melly.timerocketserver.domain.service.UserService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
-import com.melly.timerocketserver.domain.dto.request.SignUpRequestDto;
-import com.melly.timerocketserver.domain.service.UserService;
 import com.melly.timerocketserver.global.jwt.RefreshService;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;

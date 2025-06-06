@@ -1,7 +1,6 @@
 package com.melly.timerocketserver.domain.controller;
 
 import com.melly.timerocketserver.domain.dto.request.RocketRequestDto;
-import com.melly.timerocketserver.domain.dto.request.RocketUnLockRequest;
 import com.melly.timerocketserver.domain.dto.response.RocketResponse;
 import com.melly.timerocketserver.domain.service.RocketService;
 import com.melly.timerocketserver.global.common.ResponseController;
