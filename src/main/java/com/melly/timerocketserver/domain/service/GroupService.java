@@ -4,16 +4,15 @@ import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
 import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
 import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
 import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
-import com.melly.timerocketserver.domain.dto.response.GroupDetailResponse;
-import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
-import com.melly.timerocketserver.domain.dto.response.GroupPageResponse;
-import com.melly.timerocketserver.domain.dto.response.MyGroupPageResponse;
+import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.*;
 import com.melly.timerocketserver.global.exception.GroupConflictException;
 import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
+import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -37,11 +36,13 @@ public class GroupService {
     private final GroupRocketContentRepository groupRocketContentRepository;
     private final RocketFileRepository rocketFileRepository;
     private final GroupChestRepository groupChestRepository;
+    private final GroupChatMsgRepository groupChatMsgRepository;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
                         GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
                         GroupRocketRepository groupRocketRepository, GroupRocketContentRepository groupRocketContentRepository,
-                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository) {
+                        RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository,
+                        GroupChatMsgRepository groupChatMsgRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
@@ -51,6 +52,7 @@ public class GroupService {
         this.groupRocketContentRepository = groupRocketContentRepository;
         this.rocketFileRepository = rocketFileRepository;
         this.groupChestRepository = groupChestRepository;
+        this.groupChatMsgRepository = groupChatMsgRepository;
     }
 
     // 모임 생성
@@ -481,5 +483,22 @@ public class GroupService {
         // 모임 로켓 잠금 해제 수행
         findEntity.setIsLock(false); // '잠금 해제' 상태로 명시적으로 설정
         groupRocketRepository.save(findEntity);
+    }
+
+    public GroupChatHistoryResponse getChatHistory(Long groupId, Long beforeMessageId, int size) {
+        Pageable pageable = PageRequest.of(0, size); // 첫 페이지, size개
+        Slice<GroupChatMsgEntity> slice = groupChatMsgRepository
+                .findByGroup_GroupIdAndChatMessageIdLessThanOrderByChatMessageIdDesc(groupId, beforeMessageId, pageable);
+
+        List<GroupChatMsgResponse> messages = slice.stream()
+                .map(entity -> GroupChatMsgResponse.builder()
+                        .userId(entity.getUser().getUserId())
+                        .nickname(entity.getUser().getNickname())
+                        .message(entity.getMessage())
+                        .sentAt(entity.getSentAt())
+                        .build())
+                .toList();
+
+        return new GroupChatHistoryResponse(messages, slice.hasNext());
     }
 }
