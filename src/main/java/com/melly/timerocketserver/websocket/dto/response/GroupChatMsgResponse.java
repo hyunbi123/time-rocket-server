@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class GroupChatMsgResponse {
+    private Long chatMessageId;
     private Long userId;
     private String nickname;
     private String message;

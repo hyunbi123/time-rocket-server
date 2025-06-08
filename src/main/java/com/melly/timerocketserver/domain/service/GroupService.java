@@ -487,11 +487,12 @@ public class GroupService {
 
     public GroupChatHistoryResponse getChatHistory(Long groupId, Long beforeMessageId, int size) {
         Pageable pageable = PageRequest.of(0, size); // 첫 페이지, size개
-        Slice<GroupChatMsgEntity> slice = groupChatMsgRepository
+        Slice<GroupChatMsgEntity> findEntity = groupChatMsgRepository
                 .findByGroup_GroupIdAndChatMessageIdLessThanOrderByChatMessageIdDesc(groupId, beforeMessageId, pageable);
 
-        List<GroupChatMsgResponse> messages = slice.stream()
+        List<GroupChatMsgResponse> messages = findEntity.stream()
                 .map(entity -> GroupChatMsgResponse.builder()
+                        .chatMessageId(entity.getChatMessageId())
                         .userId(entity.getUser().getUserId())
                         .nickname(entity.getUser().getNickname())
                         .message(entity.getMessage())
@@ -499,6 +500,6 @@ public class GroupService {
                         .build())
                 .toList();
 
-        return new GroupChatHistoryResponse(messages, slice.hasNext());
+        return new GroupChatHistoryResponse(messages, findEntity.hasNext());
     }
 }

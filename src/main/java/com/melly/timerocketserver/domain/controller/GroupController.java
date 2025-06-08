@@ -144,7 +144,7 @@ public class GroupController implements ResponseController {
     @GetMapping("/{groupId}/chats/history")
     public ResponseEntity<ResponseDto> getChatHistory(@PathVariable Long groupId,
                                                       @RequestParam(required = false) Long beforeMessageId,
-                                                      @RequestParam(defaultValue = "10") int size) {
+                                                      @RequestParam(defaultValue = "5") int size) {
         GroupChatHistoryResponse history = groupService.getChatHistory(groupId, beforeMessageId != null ? beforeMessageId : Long.MAX_VALUE, size);
         return makeResponseEntity(HttpStatus.OK, "히스토리 조회 성공", history);
     }
