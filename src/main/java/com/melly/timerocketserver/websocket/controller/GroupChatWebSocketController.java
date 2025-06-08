@@ -9,6 +9,7 @@ import com.melly.timerocketserver.websocket.service.GroupChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -39,9 +40,10 @@ public class GroupChatWebSocketController implements ResponseController {
     }
 
     @MessageMapping("/group/{groupId}/enter")
-    public void handleEnterMessage(@DestinationVariable Long groupId, Principal principal) {
+    public void handleEnterMessage(@DestinationVariable Long groupId, Principal principal, SimpMessageHeaderAccessor headerAccessor) {
         System.out.println("접속한 유저: " + principal.getName());
         Long userId = getUserIdFromPrincipal(principal);
+        headerAccessor.getSessionAttributes().put("groupId", groupId);
         GroupChatNotificationDto enterDto = groupChatService.createEnterMessage(groupId, userId);
         messagingTemplate.convertAndSend("/topic/group/" + groupId, enterDto);
     }
