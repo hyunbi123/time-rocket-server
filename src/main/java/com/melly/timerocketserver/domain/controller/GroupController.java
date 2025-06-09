@@ -1,9 +1,6 @@
 package com.melly.timerocketserver.domain.controller;
 
-import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
-import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
-import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
-import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
+import com.melly.timerocketserver.domain.dto.request.*;
 import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
@@ -142,12 +139,21 @@ public class GroupController implements ResponseController {
 
     // 모임 실시간 채팅 히스토리 조회
     @GetMapping("/{groupId}/chats/history")
-    public ResponseEntity<ResponseDto> getChatHistory(@PathVariable Long groupId,
+    public ResponseEntity<ResponseDto> getChatHistory(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
                                                       @RequestParam(required = false) Long beforeMessageId,
                                                       @RequestParam(defaultValue = "5") int size) {
         GroupChatHistoryResponse history = groupService.getChatHistory(groupId, beforeMessageId != null ? beforeMessageId : Long.MAX_VALUE, size);
         return makeResponseEntity(HttpStatus.OK, "히스토리 조회 성공", history);
     }
+
+    // 모임 로켓 컨텐츠 준비 해제
+    @PatchMapping("/{groupId}/readyStatus")
+    public ResponseEntity<ResponseDto> cancelReadyStatus(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
+                                                         @RequestBody CancelReadyRequest request){
+        groupService.cancelReadyStatus(getCurrentUserId(), groupId, request);
+        return makeResponseEntity(HttpStatus.OK, "로켓 컨텐츠 준비를 해제했습니다.", null);
+    }
+
 
     private Long getCurrentUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

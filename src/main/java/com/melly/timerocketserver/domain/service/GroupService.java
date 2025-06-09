@@ -1,9 +1,6 @@
 package com.melly.timerocketserver.domain.service;
 
-import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
-import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
-import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
-import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
+import com.melly.timerocketserver.domain.dto.request.*;
 import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.*;
@@ -517,5 +514,13 @@ public class GroupService {
                 .toList();
 
         return new GroupChatHistoryResponse(messages, findEntity.hasNext());
+    }
+
+    // 모임 로켓 컨텐츠 준비 해제
+    public void cancelReadyStatus(Long currentUserId, Long groupId, CancelReadyRequest request) {
+        GroupRocketContentEntity grc = groupRocketContentRepository.findByGroup_GroupIdAndUser_UserIdAndRocketRound(groupId, currentUserId, request.getCurrentRound())
+                .orElseThrow(() -> new GroupNotFoundException("존재하지 않는 그룹 로켓 컨텐츠입니다."));
+        grc.setReady(request.getIsReady());
+        groupRocketContentRepository.save(grc);
     }
 }

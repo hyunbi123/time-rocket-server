@@ -23,4 +23,6 @@ public interface GroupRocketContentRepository extends JpaRepository<GroupRocketC
             "AND grc.ready = true " +
             "AND grc.isDeleted = false")
     List<Long> findReadyUserIdsByRound(@Param("groupId") Long groupId, @Param("round") Integer round);
+
+    Optional<GroupRocketContentEntity> findByGroup_GroupIdAndUser_UserIdAndRocketRound(Long groupId, Long currentUserId, Integer round);
 }
