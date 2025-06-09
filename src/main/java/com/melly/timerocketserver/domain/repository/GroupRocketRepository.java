@@ -17,4 +17,6 @@ public interface GroupRocketRepository extends JpaRepository<GroupRocketEntity,L
 
     Optional<GroupRocketEntity> findByGroupRocketIdAndIsLockTrue(Long groupRocketId);
 
+    @Query("SELECT MAX(gr.rocketRound) FROM GroupRocketEntity gr WHERE gr.group.groupId = :groupId")
+    Optional<Integer> findMaxRoundByGroupId(@Param("groupId") Long groupId);
 }

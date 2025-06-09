@@ -290,17 +290,25 @@ public class GroupService {
         GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
                 .orElseThrow(() -> new GroupConflictException("해당 모임에 참여한 적이 없습니다."));
 
+        Integer currentRound = groupRocketRepository.findMaxRoundByGroupId(groupId)
+                .orElse(1) + 1;
+
         List<GroupMemberEntity> members = groupMemberRepository.findByGroup_GroupIdAndKickedFalse(groupId);
         int memberCount = groupMemberRepository.countByGroup_GroupIdAndKickedFalse(groupId);
 
+
         List<GroupMemberListResponse.MemberDto> memberDtos = members.stream()
-                .map(m -> GroupMemberListResponse.MemberDto.builder()
-                        .groupMemberId(m.getGroupMemberId())
-                        .userId(m.getUser().getUserId())
-                        .nickname(m.getUser().getNickname())
-                        .isKicked(m.isKicked())
-                        .isSavedRocket(m.isSavedRocket())
-                        .build())
+                .map(m -> {
+                    boolean memberReady = groupRocketContentRepository.existsByGroup_GroupIdAndUser_UserIdAndGroupRocket_RocketRoundAndReadyIsTrueAndIsDeletedFalse(
+                            groupId, m.getUser().getUserId(), currentRound);
+                    return GroupMemberListResponse.MemberDto.builder()
+                            .groupMemberId(m.getGroupMemberId())
+                            .userId(m.getUser().getUserId())
+                            .nickname(m.getUser().getNickname())
+                            .isKicked(m.isKicked())
+                            .isReady(memberReady)
+                            .build();
+                })
                 .toList();
 
         // 응답 객체 생성 및 반환
@@ -308,6 +316,7 @@ public class GroupService {
                 .members(memberDtos)
                 .MemberCount(memberCount)
                 .MemberLimit(group.getMemberLimit())
+                .currentRound(currentRound)
                 .build();
     }
 

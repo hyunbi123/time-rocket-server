@@ -13,4 +13,6 @@ public interface GroupRocketContentRepository extends JpaRepository<GroupRocketC
 
     boolean existsByGroup_GroupIdAndUser_UserIdAndReadyTrueAndGroupRocketIsNull(Long groupId, Long userId);
     List<GroupRocketContentEntity> findAllByGroup_GroupIdAndUser_UserIdAndGroupRocketIsNullAndReadyTrue(Long groupId, Long userId);
+
+    boolean existsByGroup_GroupIdAndUser_UserIdAndGroupRocket_RocketRoundAndReadyIsTrueAndIsDeletedFalse(Long groupId, Long userId, Integer round);
 }
