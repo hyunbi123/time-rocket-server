@@ -104,6 +104,7 @@ CREATE TABLE `group_rocket_content_tbl` (
   `group_id` bigint NOT NULL,
   `user_id` bigint NOT NULL,
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `rocket_round` int unsigned NOT NULL DEFAULT '1',
   `is_ready` tinyint(1) DEFAULT '0',
   `is_deleted` tinyint(1) DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -116,7 +117,7 @@ CREATE TABLE `group_rocket_content_tbl` (
   CONSTRAINT `fk_grc_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_grc_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE SET NULL,
   CONSTRAINT `fk_grc_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 

@@ -2,6 +2,8 @@ package com.melly.timerocketserver.domain.repository;
 
 import com.melly.timerocketserver.domain.entity.GroupRocketContentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,5 +16,11 @@ public interface GroupRocketContentRepository extends JpaRepository<GroupRocketC
     boolean existsByGroup_GroupIdAndUser_UserIdAndReadyTrueAndGroupRocketIsNull(Long groupId, Long userId);
     List<GroupRocketContentEntity> findAllByGroup_GroupIdAndUser_UserIdAndGroupRocketIsNullAndReadyTrue(Long groupId, Long userId);
 
-    boolean existsByGroup_GroupIdAndUser_UserIdAndGroupRocket_RocketRoundAndReadyIsTrueAndIsDeletedFalse(Long groupId, Long userId, Integer round);
+    @Query("SELECT DISTINCT grc.user.userId " +
+            "FROM GroupRocketContentEntity grc " +
+            "WHERE grc.group.groupId = :groupId " +
+            "AND grc.rocketRound = :round " +
+            "AND grc.ready = true " +
+            "AND grc.isDeleted = false")
+    List<Long> findReadyUserIdsByRound(@Param("groupId") Long groupId, @Param("round") Integer round);
 }

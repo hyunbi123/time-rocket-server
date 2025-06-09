@@ -21,8 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -291,16 +293,16 @@ public class GroupService {
                 .orElseThrow(() -> new GroupConflictException("해당 모임에 참여한 적이 없습니다."));
 
         Integer currentRound = groupRocketRepository.findMaxRoundByGroupId(groupId)
-                .orElse(1) + 1;
+                .orElse(0) + 1;
 
         List<GroupMemberEntity> members = groupMemberRepository.findByGroup_GroupIdAndKickedFalse(groupId);
         int memberCount = groupMemberRepository.countByGroup_GroupIdAndKickedFalse(groupId);
 
-
+        Set<Long> readyUserIdSet = new HashSet<>(groupRocketContentRepository.findReadyUserIdsByRound(groupId,currentRound));
+        System.out.println("Ready user IDs for round " + currentRound + ": " + readyUserIdSet);
         List<GroupMemberListResponse.MemberDto> memberDtos = members.stream()
                 .map(m -> {
-                    boolean memberReady = groupRocketContentRepository.existsByGroup_GroupIdAndUser_UserIdAndGroupRocket_RocketRoundAndReadyIsTrueAndIsDeletedFalse(
-                            groupId, m.getUser().getUserId(), currentRound);
+                    boolean memberReady = readyUserIdSet.contains(m.getUser().getUserId());
                     return GroupMemberListResponse.MemberDto.builder()
                             .groupMemberId(m.getGroupMemberId())
                             .userId(m.getUser().getUserId())
@@ -357,6 +359,10 @@ public class GroupService {
     // 모임 로켓 컨텐츠 준비
     @Transactional
     public void readyGroupRocketContent(Long groupId, Long userId, GroupContentRequest request, List<MultipartFile> files) throws IOException {
+        // 현재 최대 라운드 가져오기 (만약 없으면 0으로 처리)
+        int maxRound = groupRocketRepository.findMaxRocketRoundByGroupId(groupId);
+        int currentRound = maxRound + 1;
+
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
@@ -375,6 +381,7 @@ public class GroupService {
                         .groupRocket(null)
                         .group(group)
                         .user(user)
+                        .rocketRound(currentRound)
                         .ready(true)
                         .isDeleted(false)
                         .createdAt(LocalDateTime.now())
