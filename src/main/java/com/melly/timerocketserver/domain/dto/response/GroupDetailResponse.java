@@ -13,6 +13,7 @@ public class GroupDetailResponse {
     private String groupName;
     private String description;
     private String leaderNickname;
+    private Long leaderId;
     private Integer memberLimit;
     private Integer currentMemberCount;
     @JsonProperty("isPrivate")

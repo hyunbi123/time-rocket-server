@@ -204,6 +204,7 @@ public class GroupService {
                 .groupName(findEntity.getGroupName())
                 .description(findEntity.getDescription())
                 .leaderNickname(findEntity.getLeader().getNickname())
+                .leaderId(findEntity.getLeader().getUserId())
                 .memberLimit(findEntity.getMemberLimit())
                 .currentMemberCount(findEntity.getCurrentMemberCount())
                 .isPrivate(findEntity.getIsPrivate())
