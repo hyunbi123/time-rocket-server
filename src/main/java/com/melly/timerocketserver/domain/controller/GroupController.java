@@ -149,7 +149,7 @@ public class GroupController implements ResponseController {
     // 모임 로켓 컨텐츠 준비 해제
     @PatchMapping("/{groupId}/readyStatus")
     public ResponseEntity<ResponseDto> cancelReadyStatus(@PathVariable @Min(value = 1, message = "groupId는 1 이상이어야 합니다.") Long groupId,
-                                                         @RequestBody CancelReadyRequest request){
+                                                         @RequestBody @Validated CancelReadyRequest request){
         groupService.cancelReadyStatus(getCurrentUserId(), groupId, request);
         return makeResponseEntity(HttpStatus.OK, "로켓 컨텐츠 준비를 해제했습니다.", null);
     }
