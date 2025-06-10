@@ -34,6 +34,9 @@ public class GroupRocketContentEntity {
     @Column(name = "content")
     private String content;
 
+    @Column(name = "rocket_round")
+    private Integer rocketRound;
+
     @Column(name = "is_ready")
     private Boolean ready;
 

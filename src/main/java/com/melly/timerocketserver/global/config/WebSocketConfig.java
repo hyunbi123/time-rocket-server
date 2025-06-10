@@ -20,13 +20,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
     private static final String ENDPOINT = "/ws";
-    private static final String SIMPLE_BROKER = "/topic";
+    private static final String SIMPLE_BROKER_TOPIC = "/topic";
     private static final String PUBLISH = "/app";
+    private static final String USER = "/user";
+    private static final String SIMPLE_BROKER_QUEUE = "/queue";
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker(SIMPLE_BROKER);
+        registry.enableSimpleBroker(SIMPLE_BROKER_TOPIC, SIMPLE_BROKER_QUEUE);
         registry.setApplicationDestinationPrefixes(PUBLISH);
+        registry.setUserDestinationPrefix(USER);      // 개인 메시지 전송용 프리픽스 설정
     }
 
     @Override
@@ -42,6 +45,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registration.taskExecutor().corePoolSize(4);
         registration.interceptors(authChannelInterceptor);
     }
-
-
 }

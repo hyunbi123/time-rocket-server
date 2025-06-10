@@ -63,6 +63,10 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
 
             // setUser에 Authentication 넣기
             accessor.setUser(authentication);
+
+            // principal name 로그
+            String principalName = ((CustomUserDetails) authentication.getPrincipal()).getUsername();
+            log.info("WebSocket CONNECT principal name: {}", principalName);
         }
         return message;
     }

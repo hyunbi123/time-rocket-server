@@ -1,9 +1,6 @@
 package com.melly.timerocketserver.domain.service;
 
-import com.melly.timerocketserver.domain.dto.request.CreateGroupRequest;
-import com.melly.timerocketserver.domain.dto.request.GroupContentRequest;
-import com.melly.timerocketserver.domain.dto.request.GroupRocketRequest;
-import com.melly.timerocketserver.domain.dto.request.JoinGroupPasswordRequest;
+import com.melly.timerocketserver.domain.dto.request.*;
 import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.*;
@@ -21,8 +18,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -205,6 +204,7 @@ public class GroupService {
                 .groupName(findEntity.getGroupName())
                 .description(findEntity.getDescription())
                 .leaderNickname(findEntity.getLeader().getNickname())
+                .leaderId(findEntity.getLeader().getUserId())
                 .memberLimit(findEntity.getMemberLimit())
                 .currentMemberCount(findEntity.getCurrentMemberCount())
                 .isPrivate(findEntity.getIsPrivate())
@@ -290,17 +290,25 @@ public class GroupService {
         GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
                 .orElseThrow(() -> new GroupConflictException("해당 모임에 참여한 적이 없습니다."));
 
+        Integer currentRound = groupRocketRepository.findMaxRoundByGroupId(groupId)
+                .orElse(0) + 1;
+
         List<GroupMemberEntity> members = groupMemberRepository.findByGroup_GroupIdAndKickedFalse(groupId);
         int memberCount = groupMemberRepository.countByGroup_GroupIdAndKickedFalse(groupId);
 
+        Set<Long> readyUserIdSet = new HashSet<>(groupRocketContentRepository.findReadyUserIdsByRound(groupId,currentRound));
+        System.out.println("Ready user IDs for round " + currentRound + ": " + readyUserIdSet);
         List<GroupMemberListResponse.MemberDto> memberDtos = members.stream()
-                .map(m -> GroupMemberListResponse.MemberDto.builder()
-                        .groupMemberId(m.getGroupMemberId())
-                        .userId(m.getUser().getUserId())
-                        .nickname(m.getUser().getNickname())
-                        .isKicked(m.isKicked())
-                        .isSavedRocket(m.isSavedRocket())
-                        .build())
+                .map(m -> {
+                    boolean memberReady = readyUserIdSet.contains(m.getUser().getUserId());
+                    return GroupMemberListResponse.MemberDto.builder()
+                            .groupMemberId(m.getGroupMemberId())
+                            .userId(m.getUser().getUserId())
+                            .nickname(m.getUser().getNickname())
+                            .isKicked(m.isKicked())
+                            .isReady(memberReady)
+                            .build();
+                })
                 .toList();
 
         // 응답 객체 생성 및 반환
@@ -308,6 +316,7 @@ public class GroupService {
                 .members(memberDtos)
                 .MemberCount(memberCount)
                 .MemberLimit(group.getMemberLimit())
+                .currentRound(currentRound)
                 .build();
     }
 
@@ -348,6 +357,10 @@ public class GroupService {
     // 모임 로켓 컨텐츠 준비
     @Transactional
     public void readyGroupRocketContent(Long groupId, Long userId, GroupContentRequest request, List<MultipartFile> files) throws IOException {
+        // 현재 최대 라운드 가져오기 (만약 없으면 0으로 처리)
+        int maxRound = groupRocketRepository.findMaxRocketRoundByGroupId(groupId);
+        int currentRound = maxRound + 1;
+
         GroupEntity group = groupRepository.findByIsDeletedFalseAndGroupId(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("해당 모임은 존재하지 않거나 삭제된 모임입니다."));
 
@@ -366,6 +379,7 @@ public class GroupService {
                         .groupRocket(null)
                         .group(group)
                         .user(user)
+                        .rocketRound(currentRound)
                         .ready(true)
                         .isDeleted(false)
                         .createdAt(LocalDateTime.now())
@@ -411,7 +425,7 @@ public class GroupService {
         }
 
         // 그룹 멤버 조회
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findAllByGroup_GroupId(groupId);
+        List<GroupMemberEntity> groupMembers = groupMemberRepository.findAllByGroup_GroupIdAndKickedFalse(groupId);
 
         // 모든 멤버가 준비됐는지 먼저 확인 (전송 전에)
         for (GroupMemberEntity member : groupMembers) {
@@ -501,5 +515,13 @@ public class GroupService {
                 .toList();
 
         return new GroupChatHistoryResponse(messages, findEntity.hasNext());
+    }
+
+    // 모임 로켓 컨텐츠 준비 해제
+    public void cancelReadyStatus(Long currentUserId, Long groupId, CancelReadyRequest request) {
+        GroupRocketContentEntity grc = groupRocketContentRepository.findByGroup_GroupIdAndUser_UserIdAndRocketRound(groupId, currentUserId, request.getCurrentRound())
+                .orElseThrow(() -> new GroupNotFoundException("존재하지 않는 그룹 로켓 컨텐츠입니다."));
+        grc.setReady(request.getIsReady());
+        groupRocketContentRepository.save(grc);
     }
 }

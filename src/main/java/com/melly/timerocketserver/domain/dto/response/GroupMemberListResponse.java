@@ -14,6 +14,7 @@ public class GroupMemberListResponse {
     private List<MemberDto> members;
     private int MemberCount;
     private int MemberLimit;
+    private int currentRound;
 
     @Getter
     @Setter
@@ -26,6 +27,7 @@ public class GroupMemberListResponse {
         private String nickname;
         @JsonProperty("isKicked")
         private boolean isKicked;
-        private boolean isSavedRocket;
+        @JsonProperty("isReady")
+        private boolean isReady;
     }
 }
