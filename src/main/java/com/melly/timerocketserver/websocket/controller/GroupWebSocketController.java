@@ -1,6 +1,7 @@
 package com.melly.timerocketserver.websocket.controller;
 
 import com.melly.timerocketserver.domain.service.GroupService;
+import com.melly.timerocketserver.domain.service.UserService;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
 import com.melly.timerocketserver.websocket.dto.request.KickRequestDto;
 import com.melly.timerocketserver.websocket.dto.request.ReadyStatusMsgRequest;
@@ -20,16 +21,21 @@ import java.security.Principal;
 public class GroupWebSocketController {
     private final SimpMessagingTemplate messagingTemplate;
     private final GroupService groupService;
+    private final UserService userService;
 
-    public GroupWebSocketController(SimpMessagingTemplate messagingTemplate, GroupService groupService) {
+    public GroupWebSocketController(SimpMessagingTemplate messagingTemplate, GroupService groupService,
+                                    UserService userService) {
         this.messagingTemplate = messagingTemplate;
         this.groupService = groupService;
+        this.userService = userService;
     }
 
     @MessageMapping("/group/{groupId}/kick")
     public void handleReadyStatus(@DestinationVariable Long groupId, @Payload KickRequestDto kickRequest, Principal principal) {
         Long leaderId = getUserIdFromPrincipal(principal);
-        System.out.println("강퇴 요청 도착: " + kickRequest.getUserId());
+        String targetUsername = userService.findByUserId(kickRequest.getUserId()).getEmail();
+        log.info("targetUsername is {}", targetUsername);
+        log.info("principal.getUsername() is {}", principal.getName());
         // 1. 강퇴 처리 (DB 제거 등)
         groupService.kickGroupMember(groupId, kickRequest.getUserId(), leaderId);
 
@@ -38,7 +44,7 @@ public class GroupWebSocketController {
 
         // 3. 해당 유저에게도 알림
         messagingTemplate.convertAndSendToUser(
-                String.valueOf(kickRequest.getUserId()), // 대상 유저 세션 키
+                String.valueOf(targetUsername), // 대상 유저 세션 키
                 "/queue/kick", // 개인 큐
                 "강퇴당했습니다"
         );
