@@ -425,7 +425,7 @@ public class GroupService {
         }
 
         // 그룹 멤버 조회
-        List<GroupMemberEntity> groupMembers = groupMemberRepository.findAllByGroup_GroupId(groupId);
+        List<GroupMemberEntity> groupMembers = groupMemberRepository.findAllByGroup_GroupIdAndKickedFalse(groupId);
 
         // 모든 멤버가 준비됐는지 먼저 확인 (전송 전에)
         for (GroupMemberEntity member : groupMembers) {
