@@ -203,6 +203,7 @@ public class GroupService {
         return GroupDetailResponse.builder()
                 .groupId(findEntity.getGroupId())
                 .groupName(findEntity.getGroupName())
+                .theme(findEntity.getTheme().getTheme())
                 .description(findEntity.getDescription())
                 .leaderNickname(findEntity.getLeader().getNickname())
                 .leaderId(findEntity.getLeader().getUserId())

@@ -11,6 +11,7 @@ import lombok.*;
 public class GroupDetailResponse {
     private Long groupId;
     private String groupName;
+    private String theme;
     private String description;
     private String leaderNickname;
     private Long leaderId;
