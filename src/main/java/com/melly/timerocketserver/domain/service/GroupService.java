@@ -9,6 +9,7 @@ import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
+import com.melly.timerocketserver.websocket.dto.response.JoinedMemberPayload;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -202,6 +203,7 @@ public class GroupService {
         return GroupDetailResponse.builder()
                 .groupId(findEntity.getGroupId())
                 .groupName(findEntity.getGroupName())
+                .theme(findEntity.getTheme().getTheme())
                 .description(findEntity.getDescription())
                 .leaderNickname(findEntity.getLeader().getNickname())
                 .leaderId(findEntity.getLeader().getUserId())
@@ -523,5 +525,15 @@ public class GroupService {
                 .orElseThrow(() -> new GroupNotFoundException("존재하지 않는 그룹 로켓 컨텐츠입니다."));
         grc.setReady(request.getIsReady());
         groupRocketContentRepository.save(grc);
+    }
+
+    public JoinedMemberPayload getJoinedMemberPayload(Long groupId, Long userId) {
+        GroupMemberEntity member = groupMemberRepository.findByGroup_GroupIdAndUser_UserId(groupId, userId)
+                .orElseThrow(() -> new UserNotFoundException("그룹에 해당 유저가 없습니다."));
+
+        return new JoinedMemberPayload(
+                member.getUser().getUserId(),
+                member.getUser().getNickname()
+        );
     }
 }
