@@ -29,6 +29,12 @@ public class GroupRocketWebSocketController {
         groupRocketWebSocketService.publishReadyStatus(groupId, userId, message.getCurrentRound(), message.getIsReady());
     }
 
+    @MessageMapping("/group/{groupId}/send")
+    public void handleReadyStatus(@DestinationVariable Long groupId, Principal principal) {
+        Long userId = getUserIdFromPrincipal(principal);
+        groupRocketWebSocketService.publishRocketSent(groupId, userId);
+    }
+
     private Long getUserIdFromPrincipal(Principal principal) {
         if (principal instanceof Authentication authentication) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
