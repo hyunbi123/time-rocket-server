@@ -387,6 +387,9 @@ public class GroupService {
                         .createdAt(LocalDateTime.now())
                         .build());
 
+        // 기존 데이터가 있어도 rocketRound 업데이트
+        grc.setRocketRound(currentRound);
+
         grc.setContent(request.getContent());
         grc.setReady(true);
 
@@ -443,6 +446,11 @@ public class GroupService {
         int maxRound = groupRocketRepository.findMaxRocketRoundByGroupId(groupId);
         int newRound = maxRound + 1;
 
+
+        // 공통 콘텐츠 목록 한 번만 조회
+        List<GroupRocketContentEntity> allReadyContents = groupRocketContentRepository
+                .findAllByGroup_GroupIdAndGroupRocketIsNullAndReadyTrue(groupId);
+
         for (GroupMemberEntity member : groupMembers) {
             UserEntity receiver = member.getUser();
 
@@ -458,13 +466,20 @@ public class GroupService {
                     .build();
             groupRocketRepository.save(rocket);
 
-            List<GroupRocketContentEntity> contents = groupRocketContentRepository
-                    .findAllByGroup_GroupIdAndUser_UserIdAndGroupRocketIsNullAndReadyTrue(groupId, receiver.getUserId());
-
-            for (GroupRocketContentEntity content : contents) {
-                content.setGroupRocket(rocket);
+            // 콘텐츠 복사해서 각각의 로켓에 연결
+            for (GroupRocketContentEntity originalContent : allReadyContents) {
+                GroupRocketContentEntity copied = GroupRocketContentEntity.builder()
+                        .groupRocket(rocket)
+                        .group(originalContent.getGroup())
+                        .user(originalContent.getUser())
+                        .content(originalContent.getContent())
+                        .rocketRound(newRound)
+                        .ready(true)
+                        .isDeleted(false)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                groupRocketContentRepository.save(copied);
             }
-            groupRocketContentRepository.saveAll(contents); // 더티 체킹으로 save 명시 안해도 무관... (트랜잭션과 영속성 컨텍스트)
 
             // 그룹 보관함에 저장
             GroupChestEntity chest = GroupChestEntity.builder()
