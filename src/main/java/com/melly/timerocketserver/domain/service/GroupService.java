@@ -402,7 +402,6 @@ public class GroupService {
                     String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
 
                     RocketFileEntity rocketFile = RocketFileEntity.builder()
-                            .grc(grc)
                             .originalName(file.getOriginalFilename())
                             .uniqueName(uniqueName)
                             .savedPath(savedPath)
@@ -412,6 +411,9 @@ public class GroupService {
                             .build();
 
                     rocketFileRepository.save(rocketFile);
+
+                    // 연관관계 설정
+                    grc.getFiles().add(rocketFile);
                 }
             }
         }
@@ -479,6 +481,14 @@ public class GroupService {
                         .createdAt(LocalDateTime.now())
                         .build();
                 groupRocketContentRepository.save(copied);
+
+                // 파일 복사 대신 기존 파일 참조만 연결
+                if (originalContent.getFiles() != null) {
+                    for (RocketFileEntity originalFile : originalContent.getFiles()) {
+                        // 연관관계 편의 메서드 있으면 사용하는 게 좋음
+                        copied.addFile(originalFile);
+                    }
+                }
             }
 
             // 그룹 보관함에 저장

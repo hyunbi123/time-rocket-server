@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "group_rocket_content_tbl")
@@ -62,6 +64,23 @@ public class GroupRocketContentEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
-    @OneToMany(mappedBy = "grc", cascade = CascadeType.ALL)
-    private List<RocketFileEntity> rocketFiles;
+    @ManyToMany
+    @JoinTable(
+            name = "group_rocket_content_file_tbl",
+            joinColumns = @JoinColumn(name = "grc_id"),
+            inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    @Builder.Default
+    private Set<RocketFileEntity> files = new HashSet<>();
+
+    // 연관관계 편의 메서드 (양방향 연관관계에서, 양쪽 컬렉션을 동기화해줌)
+    public void addFile(RocketFileEntity file) {
+        files.add(file);
+        file.getGroupRocketContents().add(this);
+    }
+
+    public void removeFile(RocketFileEntity file) {
+        files.remove(file);
+        file.getGroupRocketContents().remove(this);
+    }
 }

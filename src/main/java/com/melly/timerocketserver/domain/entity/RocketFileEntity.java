@@ -3,6 +3,8 @@ package com.melly.timerocketserver.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "rocket_file_tbl")
@@ -25,9 +27,8 @@ public class RocketFileEntity {
     @JoinColumn(name = "group_rocket_id")
     private GroupRocketEntity groupRocket;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grc_id")
-    private GroupRocketContentEntity grc;
+    @ManyToMany(mappedBy = "files")
+    private Set<GroupRocketContentEntity> groupRocketContents = new HashSet<>();
 
     @Column(name = "original_name")
     private String originalName;

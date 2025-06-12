@@ -191,6 +191,17 @@ CREATE TABLE `rocket_file_tbl` (
 
 
 
+CREATE TABLE `group_rocket_content_file_tbl` (
+  `grc_id` bigint NOT NULL,
+  `file_id` bigint NOT NULL,
+  PRIMARY KEY (`grc_id`,`file_id`),
+  KEY `file_id` (`file_id`),
+  CONSTRAINT `group_rocket_content_file_tbl_ibfk_1` FOREIGN KEY (`grc_id`) REFERENCES `group_rocket_content_tbl` (`grc_id`) ON DELETE CASCADE,
+  CONSTRAINT `group_rocket_content_file_tbl_ibfk_2` FOREIGN KEY (`file_id`) REFERENCES `rocket_file_tbl` (`file_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
 CREATE TABLE `sent_chest_tbl` (
   `sent_chest_id` bigint NOT NULL AUTO_INCREMENT,
   `rocket_id` bigint NOT NULL,

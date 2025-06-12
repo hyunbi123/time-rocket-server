@@ -3,7 +3,9 @@ package com.melly.timerocketserver.domain.service;
 import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.GroupChestRepository;
+import com.melly.timerocketserver.domain.repository.GroupMemberRepository;
 import com.melly.timerocketserver.global.exception.ChestNotFoundException;
+import com.melly.timerocketserver.global.exception.GroupConflictException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,10 +19,13 @@ import java.util.stream.Stream;
 @Service
 public class GroupChestService {
     private final GroupChestRepository groupChestRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final DisplayService displayService;
 
-    public GroupChestService(GroupChestRepository groupChestRepository, DisplayService displayService) {
+    public GroupChestService(GroupChestRepository groupChestRepository, GroupMemberRepository groupMemberRepository,
+                             DisplayService displayService) {
         this.groupChestRepository = groupChestRepository;
+        this.groupMemberRepository = groupMemberRepository;
         this.displayService = displayService;
     }
 
@@ -81,7 +86,16 @@ public class GroupChestService {
                 .findByGroupChestIdAndIsDeletedFalseAndGroupRocket_ReceiverUser_UserId(groupChestId, userId)
                 .orElseThrow(() -> new ChestNotFoundException("해당 모임 보관함이 없거나 삭제된 상태입니다."));
 
+
         GroupRocketEntity rocket = groupChest.getGroupRocket();
+        GroupEntity group = rocket.getGroup();  // rocket → group 추출
+
+        // 모임 구성원인지 확인
+        boolean isMember = groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(group.getGroupId(), userId);
+        if (!isMember) {
+            throw new GroupConflictException("해당 유저는 이 모임의 멤버가 아닙니다.");
+        }
+
         boolean isLocked = rocket.getIsLock();
 
         // 파일, 콘텐츠 변환
@@ -91,7 +105,7 @@ public class GroupChestService {
 
         // 2) 모든 콘텐츠의 파일을 모아서 변환
         List<RocketFileEntity> allRocketFiles = rocket.getGrc().stream()
-                .flatMap(grc -> grc.getRocketFiles() != null ? grc.getRocketFiles().stream() : Stream.empty())
+                .flatMap(grc -> grc.getFiles() != null ? grc.getFiles().stream() : Stream.empty())
                 .collect(Collectors.toList());
 
         List<RocketFileResponse> fileResponses = toRocketFileResponseList(allRocketFiles);
