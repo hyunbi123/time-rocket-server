@@ -35,7 +35,16 @@ CREATE TABLE `group_theme_tbl` (
   PRIMARY KEY (`group_theme_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO group_theme_tbl (theme) VALUES ('요리'), ('음악');
+INSERT INTO group_theme_tbl (theme)
+VALUES
+  ('요리'),
+  ('음악'),
+  ('운동'),
+  ('독서'),
+  ('영화'),
+  ('여행'),
+  ('게임'),
+  ('기타');
 
 
 
@@ -179,6 +188,17 @@ CREATE TABLE `rocket_file_tbl` (
   CONSTRAINT `rocket_file_fk_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE CASCADE,
   CONSTRAINT `rocket_file_tbl_ibfk_1` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+
+CREATE TABLE `group_rocket_content_file_tbl` (
+  `grc_id` bigint NOT NULL,
+  `file_id` bigint NOT NULL,
+  PRIMARY KEY (`grc_id`,`file_id`),
+  KEY `file_id` (`file_id`),
+  CONSTRAINT `group_rocket_content_file_tbl_ibfk_1` FOREIGN KEY (`grc_id`) REFERENCES `group_rocket_content_tbl` (`grc_id`) ON DELETE CASCADE,
+  CONSTRAINT `group_rocket_content_file_tbl_ibfk_2` FOREIGN KEY (`file_id`) REFERENCES `rocket_file_tbl` (`file_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 
