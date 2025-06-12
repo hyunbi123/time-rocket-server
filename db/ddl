@@ -35,7 +35,16 @@ CREATE TABLE `group_theme_tbl` (
   PRIMARY KEY (`group_theme_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO group_theme_tbl (theme) VALUES ('요리'), ('음악');
+INSERT INTO group_theme_tbl (theme)
+VALUES
+  ('요리'),
+  ('음악'),
+  ('운동'),
+  ('독서'),
+  ('영화'),
+  ('여행'),
+  ('게임'),
+  ('기타');
 
 
 
