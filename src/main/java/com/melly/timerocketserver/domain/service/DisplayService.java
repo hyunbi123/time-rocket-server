@@ -46,11 +46,6 @@ public class DisplayService {
         // 2. DB에서 공개 보관함 조회 (receiverUser 기준)
         List<ReceivedChestEntity> chestEntities = receivedChestRepository.findByIsDeletedFalseAndIsPublicTrueAndRocket_ReceiverUser_UserId(userId);
 
-        // 비어 있으면 404 에러 발생
-        if (chestEntities == null || chestEntities.isEmpty()) {
-            throw new DisplayNotFoundException("본인 진열장에 해당 로켓이 존재하지 않거나 삭제된 상태입니다.");
-        }
-
         // Entity → DTO 변환
         List<DisplayDto> displayList = chestEntities.stream()
                 .map(DisplayDto::new)
