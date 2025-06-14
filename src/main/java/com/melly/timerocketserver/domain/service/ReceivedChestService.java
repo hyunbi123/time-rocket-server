@@ -46,11 +46,6 @@ public class ReceivedChestService {
                     userId, receiverType, rocketName, pageable);
         }
 
-        // Page 객체는 Null 이 존재할 수 없음
-        if (findEntity.isEmpty()) {
-            throw new ChestNotFoundException("해당 조건에 맞는 결과가 없습니다.");
-        }
-
         // 보관함 탭마다 로켓 갯수
         Long receivedCount = receivedChestRepository.countByIsDeletedFalseAndRocket_ReceiverUser_UserId(userId);
 
