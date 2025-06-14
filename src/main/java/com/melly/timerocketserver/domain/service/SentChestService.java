@@ -35,11 +35,6 @@ public class SentChestService {
                     userId, rocketName, pageable);
         }
 
-        // Page 객체는 Null 이 존재할 수 없음
-        if (findEntity.isEmpty()) {
-            throw new ChestNotFoundException("해당 조건에 맞는 결과가 없습니다.");
-        }
-
         // 송신 보관함의 아이템 갯수
         Long sentCount = sentChestRepository.countByIsDeletedFalseAndRocket_SenderUser_UserId(userId);
 
