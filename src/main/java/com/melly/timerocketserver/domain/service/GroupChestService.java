@@ -90,11 +90,6 @@ public class GroupChestService {
         GroupRocketEntity rocket = groupChest.getGroupRocket();
         GroupEntity group = rocket.getGroup();  // rocket → group 추출
 
-        // 모임 구성원인지 확인
-        boolean isMember = groupMemberRepository.existsByGroup_GroupIdAndUser_UserId(group.getGroupId(), userId);
-        if (!isMember) {
-            throw new GroupConflictException("해당 유저는 이 모임의 멤버가 아닙니다.");
-        }
 
         boolean isLocked = rocket.getIsLock();
 
