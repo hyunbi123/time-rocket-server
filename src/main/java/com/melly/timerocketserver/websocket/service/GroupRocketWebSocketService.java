@@ -1,5 +1,6 @@
 package com.melly.timerocketserver.websocket.service;
 
+import com.melly.timerocketserver.websocket.dto.request.RocketConfigRequest;
 import com.melly.timerocketserver.websocket.dto.response.ReadyStatusMsgResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -25,5 +26,9 @@ public class GroupRocketWebSocketService {
                 "senderId", userId
         );
         messagingTemplate.convertAndSend("/topic/group/" + groupId + "/send", payload);
+    }
+
+    public void publishRocketConfig(Long groupId, RocketConfigRequest config) {
+        messagingTemplate.convertAndSend("/topic/group/" + groupId + "/rocket-config", config);
     }
 }
