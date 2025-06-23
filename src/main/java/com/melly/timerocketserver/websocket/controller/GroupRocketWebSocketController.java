@@ -2,6 +2,7 @@ package com.melly.timerocketserver.websocket.controller;
 
 import com.melly.timerocketserver.global.security.CustomUserDetails;
 import com.melly.timerocketserver.websocket.dto.request.ReadyStatusMsgRequest;
+import com.melly.timerocketserver.websocket.dto.request.RocketConfigRequest;
 import com.melly.timerocketserver.websocket.service.GroupRocketWebSocketService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.Map;
 
 @Controller
 @Slf4j
@@ -33,6 +35,14 @@ public class GroupRocketWebSocketController {
     public void handleReadyStatus(@DestinationVariable Long groupId, Principal principal) {
         Long userId = getUserIdFromPrincipal(principal);
         groupRocketWebSocketService.publishRocketSent(groupId, userId);
+    }
+
+    @MessageMapping("/group/{groupId}/rocket-config")
+    public void handleRocketConfigUpdate(@DestinationVariable Long groupId, RocketConfigRequest config, Principal principal) {
+        Long userId = getUserIdFromPrincipal(principal);
+        log.info("[RocketConfig] groupId={}, senderId={}, payload={}", groupId, userId, config);
+
+        groupRocketWebSocketService.publishRocketConfig(groupId, config);
     }
 
     private Long getUserIdFromPrincipal(Principal principal) {

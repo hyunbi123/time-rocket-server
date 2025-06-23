@@ -8,6 +8,7 @@ import com.melly.timerocketserver.global.exception.GroupConflictException;
 import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
+import com.melly.timerocketserver.websocket.dto.request.RocketConfigRequest;
 import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
 import com.melly.timerocketserver.websocket.dto.response.JoinedMemberPayload;
 import org.springframework.data.domain.PageRequest;
@@ -37,12 +38,13 @@ public class GroupService {
     private final RocketFileRepository rocketFileRepository;
     private final GroupChestRepository groupChestRepository;
     private final GroupChatMsgRepository groupChatMsgRepository;
+    private final GroupRocketConfigRepository groupRocketConfigRepository;
 
     public GroupService(GroupRepository groupRepository, UserRepository userRepository, FileService fileService,
                         GroupThemeRepository groupThemeRepository, GroupMemberRepository groupMemberRepository,
                         GroupRocketRepository groupRocketRepository, GroupRocketContentRepository groupRocketContentRepository,
                         RocketFileRepository rocketFileRepository, GroupChestRepository groupChestRepository,
-                        GroupChatMsgRepository groupChatMsgRepository) {
+                        GroupChatMsgRepository groupChatMsgRepository, GroupRocketConfigRepository groupRocketConfigRepository) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.fileService = fileService;
@@ -53,6 +55,7 @@ public class GroupService {
         this.rocketFileRepository = rocketFileRepository;
         this.groupChestRepository = groupChestRepository;
         this.groupChatMsgRepository = groupChatMsgRepository;
+        this.groupRocketConfigRepository = groupRocketConfigRepository;
     }
 
     // 모임 생성
@@ -560,5 +563,54 @@ public class GroupService {
                 member.getUser().getUserId(),
                 member.getUser().getNickname()
         );
+    }
+
+    @Transactional
+    public void updateRocketConfig(Long groupId, RocketConfigRequest config) {
+        // 그룹 조회
+        GroupEntity group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("Group not found: " + groupId));
+
+        // 현재 라운드 계산
+        int maxRound = groupRocketRepository.findMaxRocketRoundByGroupId(groupId);
+        int currentRound = maxRound + 1;
+
+        // 현재 라운드에 해당하는 설정 조회 또는 새로 생성
+        Optional<GroupRocketConfigEntity> findEntity = groupRocketConfigRepository
+                .findByGroup_GroupIdAndRocketRound(groupId, currentRound);
+
+        GroupRocketConfigEntity configEntity;
+        if (findEntity.isPresent()) {
+            configEntity = findEntity.get();
+            configEntity.setRocketName(config.getRocketName());
+            configEntity.setDesign(config.getDesign());
+            configEntity.setLockExpiredAt(LocalDateTime.parse(config.getLockExpiredAt()));
+        } else {
+            configEntity = GroupRocketConfigEntity.builder()
+                    .group(group)
+                    .rocketRound(currentRound)
+                    .rocketName(config.getRocketName())
+                    .design(config.getDesign())
+                    .lockExpiredAt(LocalDateTime.parse(config.getLockExpiredAt()))
+                    .build();
+        }
+
+        groupRocketConfigRepository.save(configEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public RocketConfigResponse getCurrentRocketConfig(Long groupId) {
+        int maxRound = groupRocketRepository.findMaxRocketRoundByGroupId(groupId);
+        int currentRound = maxRound + 1;
+
+        GroupRocketConfigEntity config = groupRocketConfigRepository
+                .findByGroup_GroupIdAndRocketRound(groupId, currentRound)
+                .orElseThrow(() -> new RuntimeException("현재 라운드의 설정이 존재하지 않습니다."));
+
+        return RocketConfigResponse.builder()
+                .rocketName(config.getRocketName())
+                .design(config.getDesign())
+                .lockExpiredAt(config.getLockExpiredAt().toString())
+                .build();
     }
 }
