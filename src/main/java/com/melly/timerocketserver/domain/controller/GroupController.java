@@ -6,6 +6,7 @@ import com.melly.timerocketserver.domain.service.GroupService;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.common.ResponseDto;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
+import com.melly.timerocketserver.websocket.dto.request.RocketConfigRequest;
 import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
 import com.melly.timerocketserver.websocket.service.GroupChatService;
 import jakarta.validation.constraints.Min;
@@ -154,6 +155,20 @@ public class GroupController implements ResponseController {
         return makeResponseEntity(HttpStatus.OK, "로켓 컨텐츠 준비를 해제했습니다.", null);
     }
 
+    // 현재 라운드의 모임 로켓 설정 변경
+    @PutMapping("/{groupId}/rocket-config")
+    public ResponseEntity<?> updateRocketConfig(@PathVariable Long groupId, @RequestBody RocketConfigRequest config) {
+        // DB 저장 로직 호출
+        groupService.updateRocketConfig(groupId, config);
+        return makeResponseEntity(HttpStatus.OK, "로켓 설정을 확정지었습니다.", null);
+    }
+
+    // 현재 라운드의 모임 로켓 설정 조회
+    @GetMapping("/{groupId}/rocket-config")
+    public ResponseEntity<?> getCurrentRocketConfig(@PathVariable Long groupId) {
+        RocketConfigResponse config = groupService.getCurrentRocketConfig(groupId);
+        return makeResponseEntity(HttpStatus.OK, "현재 라운드의 로켓 설정을 불러왔습니다.", config);
+    }
 
     private Long getCurrentUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

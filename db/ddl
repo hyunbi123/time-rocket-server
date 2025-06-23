@@ -241,3 +241,18 @@ CREATE TABLE `group_chat_message_tbl` (
   CONSTRAINT `fk_chat_group` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`),
   CONSTRAINT `fk_chat_user` FOREIGN KEY (`user_id`) REFERENCES `user_tbl` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+CREATE TABLE `group_rocket_config_tbl` (
+  `config_id` bigint NOT NULL AUTO_INCREMENT,
+  `group_id` bigint NOT NULL,
+  `rocket_round` int unsigned NOT NULL,
+  `rocket_name` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `design` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `lock_expired_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`config_id`),
+  KEY `group_id` (`group_id`),
+  CONSTRAINT `group_rocket_config_tbl_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `group_tbl` (`group_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
