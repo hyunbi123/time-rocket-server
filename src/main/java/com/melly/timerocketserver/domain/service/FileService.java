@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -137,5 +138,28 @@ public class FileService {
         }
 
         return new FileDownloadDto(resource, fileEntity.getOriginalName());
+    }
+
+    // 파일 복사 메서드
+    public String copyFile(String originalSavedPath) throws IOException {
+        // originalSavedPath는 DB에 저장된 경로, 예: "/upload/uuid.jpg" 또는 "http://..." 포함 가능성도 있으니 체크 필요
+        String fileName = originalSavedPath.substring(originalSavedPath.lastIndexOf("/") + 1);
+
+        Path sourcePath = Paths.get(uploadDir1).resolve(fileName);
+
+        // 새 uniqueName 생성 (UUID + 확장자)
+        String extension = "";
+        int dotIndex = fileName.lastIndexOf(".");
+        if (dotIndex != -1) {
+            extension = fileName.substring(dotIndex);
+        }
+        String newUniqueName = UUID.randomUUID().toString() + extension;
+
+        Path targetPath = Paths.get(uploadDir1).resolve(newUniqueName);
+
+        Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // 저장 경로는 DB에 "/upload/uuid.jpg" 형태로 저장되어야 하므로 상대 경로로 맞춤
+        return baseUrl + newUniqueName;
     }
 }

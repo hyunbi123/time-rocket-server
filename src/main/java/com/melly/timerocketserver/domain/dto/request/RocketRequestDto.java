@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,4 +25,7 @@ public class RocketRequestDto {
     private String receiverEmail;
 
     private String content;
+
+    // 임시 저장 시 등록했던 파일들의 uniqueName 리스트
+    private List<String> existingFileNames;
 }
