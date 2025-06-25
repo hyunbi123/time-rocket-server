@@ -74,25 +74,55 @@ public class RocketService {
                 .build();
         rocketRepository.save(rocket);
 
-        // 파일 여러 개 저장
+        int order = 1;
+        List<String> existingFileNames = rocketRequestDto.getExistingFileNames();
+        // 1. 기존 임시 저장 파일 복사
+        if (existingFileNames != null && !existingFileNames.isEmpty()) {
+            List<RocketFileEntity> tempFiles = rocketFileRepository
+                    .findByRocket_SenderUser_UserIdAndUniqueNameIn(userId, existingFileNames);
+
+            for (RocketFileEntity tempFile : tempFiles) {
+                // 실제 파일 복사 (optional) - 파일 시스템에 있는 파일 복사하거나, 그대로 사용 가능
+                // 여기서 파일 복사가 필요하면 fileService에 복사 메서드 추가
+                // 예를 들어: String newSavedPath = fileService.copyFile(tempFile.getSavedPath());
+
+                String newSavedPath = fileService.copyFile(tempFile.getSavedPath());
+                String newUniqueName = newSavedPath.substring(newSavedPath.lastIndexOf("/") + 1);
+
+                // 실제 파일 복사 코드가 있으면 여기서 복사 수행 (fileService.copyFile() 같은)
+
+                RocketFileEntity newFile = RocketFileEntity.builder()
+                        .rocket(rocket)
+                        .isTemp(false)
+                        .originalName(tempFile.getOriginalName())
+                        .uniqueName(newUniqueName)
+                        .savedPath(newSavedPath)
+                        .fileType(tempFile.getFileType())
+                        .fileSize(tempFile.getFileSize())
+                        .fileOrder(order++)
+                        .build();
+
+                rocketFileRepository.save(newFile);
+            }
+        }
+
+
+        // 2. 새로 업로드한 파일 저장
         if (files != null && !files.isEmpty()) {
-            int order = 1;
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    // saveRocketFile 에서 저장과 고유명 생성 모두 처리
                     String savedPath = fileService.saveRocketFile(file);
-
-                    // savedPath 의 가장 마지막 / 이후의 문자열을 추출
                     String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1);
 
                     RocketFileEntity rocketFile = RocketFileEntity.builder()
                             .rocket(rocket)
+                            .isTemp(false)
                             .originalName(file.getOriginalFilename())
                             .uniqueName(uniqueName)
                             .savedPath(savedPath)
                             .fileType(file.getContentType())
                             .fileSize(file.getSize())
-                            .fileOrder(order++)
+                            .fileOrder(order++) // 이어서 순서 부여
                             .build();
                     rocketFileRepository.save(rocketFile);
                 }
