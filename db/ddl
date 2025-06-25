@@ -170,7 +170,9 @@ CREATE TABLE `rocket_tbl` (
 CREATE TABLE `rocket_file_tbl` (
   `file_id` bigint NOT NULL AUTO_INCREMENT,
   `rocket_id` bigint DEFAULT NULL,
+  `is_temp` tinyint(1) DEFAULT '0',
   `group_rocket_id` bigint DEFAULT NULL,
+  `grc_id` bigint DEFAULT NULL,
   `original_name` varchar(255) DEFAULT NULL,
   `unique_name` varchar(255) DEFAULT NULL,
   `saved_path` varchar(500) DEFAULT NULL,
@@ -178,7 +180,6 @@ CREATE TABLE `rocket_file_tbl` (
   `file_size` bigint DEFAULT NULL,
   `file_order` int DEFAULT '0',
   `uploaded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `grc_id` bigint DEFAULT NULL,
   PRIMARY KEY (`file_id`),
   UNIQUE KEY `uk_unique_name` (`unique_name`),
   KEY `rocket_id` (`rocket_id`),
@@ -187,7 +188,7 @@ CREATE TABLE `rocket_file_tbl` (
   CONSTRAINT `fk_rocket_file_grc` FOREIGN KEY (`grc_id`) REFERENCES `group_rocket_content_tbl` (`grc_id`) ON DELETE CASCADE,
   CONSTRAINT `rocket_file_fk_group_rocket` FOREIGN KEY (`group_rocket_id`) REFERENCES `group_rocket_tbl` (`group_rocket_id`) ON DELETE CASCADE,
   CONSTRAINT `rocket_file_tbl_ibfk_1` FOREIGN KEY (`rocket_id`) REFERENCES `rocket_tbl` (`rocket_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 

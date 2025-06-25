@@ -1,6 +1,7 @@
 package com.melly.timerocketserver.domain.service;
 
 import com.melly.timerocketserver.domain.dto.request.RocketRequestDto;
+import com.melly.timerocketserver.domain.dto.response.RocketFileResponse;
 import com.melly.timerocketserver.domain.dto.response.RocketResponse;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.*;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -116,7 +118,7 @@ public class RocketService {
 
     // 로켓 임시저장
     @Transactional
-    public void saveTempRocket(Long userId, RocketRequestDto rocketRequestDto) {
+    public void saveTempRocket(Long userId, RocketRequestDto rocketRequestDto, List<MultipartFile> files) throws IOException {
         String rocketName = rocketRequestDto.getRocketName();
         String rocketDesign = rocketRequestDto.getDesign();
         LocalDateTime rocketLockExpiredAt = rocketRequestDto.getLockExpiredAt();
@@ -154,6 +156,33 @@ public class RocketService {
         tempRocket.setSentAt(null);
         tempRocket.setTempCreatedAt(LocalDateTime.now());
         rocketRepository.save(tempRocket); // insert or update
+
+        // 파일 임시 저장 로직
+        if (files != null && !files.isEmpty()) {
+            // 기존 임시 파일 삭제 (있는 경우)
+            rocketFileRepository.deleteByRocket(tempRocket.getRocketId());
+
+            int order = 1;
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    // 파일 저장 (파일 시스템에 저장하고 경로 얻기)
+                    String savedPath = fileService.saveRocketFile(file);  // 예: /upload/uuid_filename.png
+                    String uniqueName = savedPath.substring(savedPath.lastIndexOf("/") + 1); // 예: uuid_filename.png
+
+                    RocketFileEntity rocketFile = RocketFileEntity.builder()
+                            .rocket(tempRocket)  // 로켓과 연관
+                            .isTemp(true)
+                            .originalName(file.getOriginalFilename())
+                            .uniqueName(uniqueName)
+                            .savedPath(savedPath)
+                            .fileType(file.getContentType())
+                            .fileSize(file.getSize())
+                            .fileOrder(order++)
+                            .build();
+                    rocketFileRepository.save(rocketFile);
+                }
+            }
+        }
     }
 
     // 로켓 임시저장 불러오기
@@ -165,7 +194,19 @@ public class RocketService {
                 ? findEntity.getReceiverUser().getEmail()
                 : null;
 
-        // RocketEntity → RocketResponse 변환
+        // RocketFileEntity 리스트 조회
+        List<RocketFileResponse> fileResponses = findEntity.getRocketFiles() // assuming RocketEntity has List<RocketFileEntity> rocketFiles
+                .stream()
+                .map(file -> RocketFileResponse.builder()
+                        .originalName(file.getOriginalName())
+                        .uniqueName(file.getUniqueName())
+                        .savedPath(file.getSavedPath())
+                        .fileType(file.getFileType())
+                        .fileSize(file.getFileSize())
+                        .fileOrder(file.getFileOrder())
+                        .build())
+                .collect(Collectors.toList());
+
         return RocketResponse.builder()
                 .rocketName(findEntity.getRocketName())
                 .design(findEntity.getDesign())
@@ -173,6 +214,7 @@ public class RocketService {
                 .receiverType(findEntity.getReceiverType())
                 .receiverEmail(receiverEmail)
                 .content(findEntity.getContent())
+                .files(fileResponses)
                 .build();
     }
 

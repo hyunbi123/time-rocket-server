@@ -38,10 +38,11 @@ public class RocketController implements ResponseController {
     }   
     
     // 로켓 임시저장
-    @PostMapping("/temp-rockets")
-    public ResponseEntity<ResponseDto> saveTempRocket(@RequestBody RocketRequestDto rocketRequestDto) {
-        rocketService.saveTempRocket(getUserId(), rocketRequestDto);
-        return makeResponseEntity(HttpStatus.OK, "로켓이 임시저장 되었습니다.", null);
+    @PostMapping(value = "/temp-rockets", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseDto> saveTempRocket(@RequestPart("data") RocketRequestDto rocketRequestDto,
+                                                      @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
+        rocketService.saveTempRocket(getUserId(), rocketRequestDto, files);
+        return makeResponseEntity(HttpStatus.OK, "로켓이 임시 저장되었습니다.", null);
     }
     
     // 로켓 임시저장 불러오기

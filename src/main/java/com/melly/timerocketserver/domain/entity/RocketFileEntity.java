@@ -23,6 +23,9 @@ public class RocketFileEntity {
     @JoinColumn(name = "rocket_id")
     private RocketEntity rocket;
 
+    @Column(name = "is_temp")
+    private boolean isTemp;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_rocket_id")
     private GroupRocketEntity groupRocket;

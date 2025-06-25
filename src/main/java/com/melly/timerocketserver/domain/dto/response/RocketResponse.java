@@ -2,6 +2,7 @@ package com.melly.timerocketserver.domain.dto.response;
 
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,4 +16,5 @@ public class RocketResponse {
     private String receiverType;
     private String receiverEmail;
     private String content;
+    private List<RocketFileResponse> files;
 }
