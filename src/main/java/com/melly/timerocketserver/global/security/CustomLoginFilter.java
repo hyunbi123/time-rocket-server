@@ -14,8 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -103,22 +102,20 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     // 로그인 실패시 실행하는 메소드
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-
-        String message = "로그인이 실패했습니다.";
-
-        // 내부 예외 메시지 전달
-        Throwable cause = failed.getCause();
-        if (cause instanceof AccountDeletedException || cause instanceof AccountInActiveException) {
-            message = cause.getMessage();
+        String message = "아이디 또는 비밀번호가 일치하지 않습니다.";
+        // 어떤 Exception이 발생했는지 로그로 남김
+        log.info("인증 실패: Exception 타입 = {}, 메시지 = {}", failed.getClass().getSimpleName(), failed.getMessage());
+        if (failed instanceof DisabledException) {
+            log.warn("비활성화된 계정 로그인 시도");
+        } else if (failed instanceof LockedException) {
+            log.warn("잠긴 계정 또는 탈퇴된 계정 로그인 시도");
+        } else if (failed instanceof BadCredentialsException) {
+            log.warn("비밀번호 불일치");
         }
 
-        String jsonResponse = "{\n"
-                + "\"code\": 401,\n"
-                + "\"message\": \"" + message + "\"\n}";
-
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(jsonResponse);
+        response.getWriter().write("{\"code\": 401, \"message\": \"" + message + "\"}");
     }
 
     // 마지막 로그인 시간 업데이트 메소드

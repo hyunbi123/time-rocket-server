@@ -26,15 +26,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (userEntity == null) {
             throw new UsernameNotFoundException("해당 회원은 존재하지 않습니다.");
         }
-
-        // 계정 상태 확인
-        if (userEntity.getStatus() == Status.DELETED) {
-            throw new AccountDeletedException("탈퇴된 계정입니다. 관리자에게 문의하십시오.");
-        }
-        if (userEntity.getStatus() == Status.INACTIVE) {
-            throw new AccountInActiveException("이 계정은 비활성화 상태입니다. 관리자에게 문의하십시오.");
-        }
-
         return new CustomUserDetails(userEntity);   // CustomUserDetails 는 UserDetails 구현체
     }
 }
