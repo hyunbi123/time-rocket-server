@@ -40,7 +40,7 @@ public class UserController implements ResponseController {
 
     @GetMapping("/users/duplicate-nickname")
     public ResponseEntity<ResponseDto> checkNickname(@RequestParam("nickname")
-                                                     @Pattern(regexp = "^[a-zA-Z0-9가-힣]{2,20}$", message = "닉네임은 한글, 영어 또는 숫자로 구성된 2자 이상이어야 합니다.")
+                                                     @Pattern(regexp = "^[a-zA-Z0-9가-힣]{2,20}$", message = "닉네임은 한글, 영어 또는 숫자로 구성된 2자 이상 20자 이하이어야 합니다.")
                                                      String nickname) {
         userService.duplicateNickname(nickname);
         return makeResponseEntity(HttpStatus.OK, "중복 체크 완료", null);
