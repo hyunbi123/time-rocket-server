@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface GroupRocketContentRepository extends JpaRepository<GroupRocketContentEntity,Long> {
     Optional<GroupRocketContentEntity> findByGroup_GroupIdAndGroupRocketIsNullAndUser_UserId(Long groupId, Long userId);
     boolean existsByGroup_GroupIdAndUser_UserIdAndReadyTrueAndGroupRocketIsNull(Long groupId, Long userId);
-    List<GroupRocketContentEntity> findAllByGroup_GroupIdAndGroupRocketIsNullAndReadyTrue(Long groupId);
+    List<GroupRocketContentEntity> findAllByGroup_GroupIdAndRocketRoundAndGroupRocketIsNullAndReadyTrue(Long groupId, int newRound);
 
     @Query("SELECT DISTINCT grc.user.userId " +
             "FROM GroupRocketContentEntity grc " +

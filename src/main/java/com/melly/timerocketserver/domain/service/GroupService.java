@@ -454,7 +454,7 @@ public class GroupService {
 
         // 공통 콘텐츠 목록 한 번만 조회
         List<GroupRocketContentEntity> allReadyContents = groupRocketContentRepository
-                .findAllByGroup_GroupIdAndGroupRocketIsNullAndReadyTrue(groupId);
+                .findAllByGroup_GroupIdAndRocketRoundAndGroupRocketIsNullAndReadyTrue(groupId, newRound);
 
         for (GroupMemberEntity member : groupMembers) {
             UserEntity receiver = member.getUser();
