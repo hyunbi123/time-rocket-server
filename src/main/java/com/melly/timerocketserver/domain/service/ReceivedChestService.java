@@ -62,6 +62,7 @@ public class ReceivedChestService {
                         .receiverNickname(find.getRocket().getReceiverUser().getNickname())
                         .receiverEmail(find.getRocket().getReceiverUser().getEmail())
                         .content(find.getRocket().getContent())
+                        .isLock((find.getRocket().getIsLock()))
                         .lockExpiredAt(find.getRocket().getLockExpiredAt())
                         .isPublic(find.getIsPublic())
                         .publicAt(find.getPublicAt())
