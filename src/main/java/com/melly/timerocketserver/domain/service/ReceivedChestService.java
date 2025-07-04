@@ -200,6 +200,13 @@ public class ReceivedChestService {
     public void softDeleteChest(Long userId, Long chestId) {
         ReceivedChestEntity findChest = receivedChestRepository.findByReceivedChestIdAndIsDeletedFalseAndRocket_ReceiverUser_UserId(chestId, userId)
                 .orElseThrow(() -> new ChestNotFoundException("본인의 수신 보관함에 해당 로켓이 존재하지 않거나 삭제된 상태입니다."));
+
+        // 잠금 해제되지 않았다면 삭제 불가
+        RocketEntity rocket = findChest.getRocket();
+        if (rocket.getIsLock()) {
+            throw new IllegalStateException("아직 잠금 해제되지 않은 로켓은 삭제할 수 없습니다.");
+        }
+
         // 논리 삭제
         if(!findChest.getIsDeleted()){
             findChest.setIsDeleted(true);
