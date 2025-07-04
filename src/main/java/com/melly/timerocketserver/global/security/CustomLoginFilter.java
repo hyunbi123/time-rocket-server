@@ -107,8 +107,10 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
         log.info("인증 실패: Exception 타입 = {}, 메시지 = {}", failed.getClass().getSimpleName(), failed.getMessage());
         if (failed instanceof DisabledException) {
             log.warn("비활성화된 계정 로그인 시도");
+            message = "해당 계정은 비활성화된 계정입니다.";
         } else if (failed instanceof LockedException) {
-            log.warn("잠긴 계정 또는 탈퇴된 계정 로그인 시도");
+            log.warn("탈퇴된 계정 로그인 시도");
+            message = "해당 계정은 탈퇴된 계정입니다.";
         } else if (failed instanceof BadCredentialsException) {
             log.warn("비밀번호 불일치");
         }
