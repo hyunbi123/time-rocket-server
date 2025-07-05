@@ -396,6 +396,9 @@ public class GroupService {
         grc.setContent(request.getContent());
         grc.setReady(true);
 
+        // 파일 저장 전, 기존 파일 연결 제거
+        grc.getFiles().clear();
+
         // 파일 저장
         if (files != null && !files.isEmpty()) {
             int order = 1;
