@@ -396,6 +396,9 @@ public class GroupService {
         grc.setContent(request.getContent());
         grc.setReady(true);
 
+        // 파일 저장 전, 기존 파일 연결 제거
+        grc.getFiles().clear();
+
         // 파일 저장
         if (files != null && !files.isEmpty()) {
             int order = 1;
@@ -454,7 +457,7 @@ public class GroupService {
 
         // 공통 콘텐츠 목록 한 번만 조회
         List<GroupRocketContentEntity> allReadyContents = groupRocketContentRepository
-                .findAllByGroup_GroupIdAndGroupRocketIsNullAndReadyTrue(groupId);
+                .findAllByGroup_GroupIdAndRocketRoundAndGroupRocketIsNullAndReadyTrue(groupId, newRound);
 
         for (GroupMemberEntity member : groupMembers) {
             UserEntity receiver = member.getUser();

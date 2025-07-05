@@ -1,5 +1,6 @@
 package com.melly.timerocketserver.global.security;
 
+import com.melly.timerocketserver.domain.entity.Status;
 import com.melly.timerocketserver.domain.entity.UserEntity;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -65,7 +66,9 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        // isAccountNonLocked 가 false 반환 할 경우 LockedException 발생
+        // 탈퇴 계정은 잠긴 계정으로 간주
+        return userEntity.getStatus() != Status.DELETED;
     }
 
     @Override
@@ -75,7 +78,9 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        // isEnabled 가 false 반환 할 경우 DisabledException 발생
+        // 활성 상태인 경우에만 로그인 허용
+        return userEntity.getStatus() == Status.ACTIVE;
     }
 
     @Override
