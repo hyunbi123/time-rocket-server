@@ -28,10 +28,9 @@ public class SentChestService {
 
         // 검색 값에 따른 송신 보관함 목록 조회
         if (rocketName == null || rocketName.isEmpty()) {
-            findEntity = sentChestRepository.findByIsDeletedFalseAndRocket_SenderUser_UserId(
-                    userId, pageable);
+            findEntity = sentChestRepository.findAllExcludingSelfSent(userId, pageable);
         } else {
-            findEntity = sentChestRepository.findByIsDeletedFalseAndRocket_SenderUser_UserIdAndRocket_RocketNameContaining(
+            findEntity = sentChestRepository.findAllExcludingSelfSentWithName(
                     userId, rocketName, pageable);
         }
 
