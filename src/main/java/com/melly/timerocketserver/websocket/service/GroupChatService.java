@@ -1,11 +1,11 @@
 package com.melly.timerocketserver.websocket.service;
 
-import com.melly.timerocketserver.domain.entity.GroupChatMsgEntity;
-import com.melly.timerocketserver.domain.entity.GroupEntity;
-import com.melly.timerocketserver.domain.entity.UserEntity;
-import com.melly.timerocketserver.domain.repository.GroupChatMsgRepository;
-import com.melly.timerocketserver.domain.service.GroupService;
-import com.melly.timerocketserver.domain.service.UserService;
+import com.melly.timerocketserver.domain.group.entity.GroupChatMsgEntity;
+import com.melly.timerocketserver.domain.group.entity.GroupEntity;
+import com.melly.timerocketserver.domain.user.entity.UserEntity;
+import com.melly.timerocketserver.domain.group.repository.GroupChatMsgRepository;
+import com.melly.timerocketserver.domain.group.service.GroupService;
+import com.melly.timerocketserver.domain.user.service.UserService;
 import com.melly.timerocketserver.websocket.dto.GroupChatNotificationDto;
 import com.melly.timerocketserver.websocket.dto.request.GroupChatMsgRequest;
 import com.melly.timerocketserver.websocket.dto.response.GroupChatMsgResponse;
