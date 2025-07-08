@@ -1,4 +1,4 @@
-package com.melly.timerocketserver.domain.dto.request;
+package com.melly.timerocketserver.domain2.user.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

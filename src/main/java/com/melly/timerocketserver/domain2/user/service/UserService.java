@@ -1,12 +1,12 @@
-package com.melly.timerocketserver.domain.service;
+package com.melly.timerocketserver.domain2.user.service;
 
-import com.melly.timerocketserver.domain.dto.request.PasswordRequestDto;
-import com.melly.timerocketserver.domain.dto.request.SignUpRequestDto;
-import com.melly.timerocketserver.domain.dto.request.UpdateStatusRequestDto;
-import com.melly.timerocketserver.domain.entity.Role;
-import com.melly.timerocketserver.domain.entity.Status;
-import com.melly.timerocketserver.domain.entity.UserEntity;
-import com.melly.timerocketserver.domain.repository.UserRepository;
+import com.melly.timerocketserver.domain2.user.dto.request.PasswordRequestDto;
+import com.melly.timerocketserver.domain2.user.dto.request.SignUpRequestDto;
+import com.melly.timerocketserver.domain2.user.dto.request.UpdateStatusRequestDto;
+import com.melly.timerocketserver.domain2.user.entity.Role;
+import com.melly.timerocketserver.domain2.user.entity.Status;
+import com.melly.timerocketserver.domain2.user.entity.UserEntity;
+import com.melly.timerocketserver.domain2.user.repository.UserRepository;
 import com.melly.timerocketserver.global.exception.DuplicateNicknameException;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;

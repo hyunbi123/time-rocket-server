@@ -1,6 +1,6 @@
-package com.melly.timerocketserver.domain.repository;
+package com.melly.timerocketserver.domain2.user.repository;
 
-import com.melly.timerocketserver.domain.entity.UserEntity;
+import com.melly.timerocketserver.domain2.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

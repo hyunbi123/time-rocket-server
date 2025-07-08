@@ -1,4 +1,4 @@
-package com.melly.timerocketserver.domain.entity;
+package com.melly.timerocketserver.domain2.user.entity;
 
 import lombok.Getter;
 

@@ -1,6 +1,6 @@
 package com.melly.timerocketserver.global.config;
 
-import com.melly.timerocketserver.domain.repository.UserRepository;
+import com.melly.timerocketserver.domain2.user.repository.UserRepository;
 import com.melly.timerocketserver.global.exception.CustomAccessDeniedHandler;
 import com.melly.timerocketserver.global.exception.CustomAuthenticationEntryPoint;
 import com.melly.timerocketserver.global.jwt.JwtFilter;

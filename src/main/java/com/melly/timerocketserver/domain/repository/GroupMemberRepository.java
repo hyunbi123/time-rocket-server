@@ -2,7 +2,7 @@ package com.melly.timerocketserver.domain.repository;
 
 import com.melly.timerocketserver.domain.entity.GroupEntity;
 import com.melly.timerocketserver.domain.entity.GroupMemberEntity;
-import com.melly.timerocketserver.domain.entity.UserEntity;
+import com.melly.timerocketserver.domain2.user.entity.UserEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
