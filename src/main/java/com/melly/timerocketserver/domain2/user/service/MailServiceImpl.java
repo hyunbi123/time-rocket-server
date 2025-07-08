@@ -1,8 +1,8 @@
-package com.melly.timerocketserver.domain.service;
+package com.melly.timerocketserver.domain2.user.service;
 
-import com.melly.timerocketserver.domain.dto.request.EmailRequestDto;
-import com.melly.timerocketserver.domain.dto.request.EmailVerificationRequestDto;
-import com.melly.timerocketserver.domain.dto.request.PasswordVerificationRequestDto;
+import com.melly.timerocketserver.domain2.user.dto.request.EmailRequestDto;
+import com.melly.timerocketserver.domain2.user.dto.request.EmailVerificationRequestDto;
+import com.melly.timerocketserver.domain2.user.dto.request.PasswordVerificationRequestDto;
 import com.melly.timerocketserver.domain2.user.entity.UserEntity;
 import com.melly.timerocketserver.domain2.user.repository.UserRepository;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
