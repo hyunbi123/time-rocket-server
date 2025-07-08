@@ -1,0 +1,63 @@
+package com.melly.timerocketserver.domain.rocket.entity;
+
+import com.melly.timerocketserver.domain.group.entity.GroupRocketContentEntity;
+import com.melly.timerocketserver.domain.group.entity.GroupRocketEntity;
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Table(name = "rocket_file_tbl")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class RocketFileEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "file_id")
+    private Long fileId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rocket_id")
+    private RocketEntity rocket;
+
+    @Column(name = "is_temp")
+    private boolean isTemp;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_rocket_id")
+    private GroupRocketEntity groupRocket;
+
+    @ManyToMany(mappedBy = "files")
+    private Set<GroupRocketContentEntity> groupRocketContents = new HashSet<>();
+
+    @Column(name = "original_name")
+    private String originalName;
+
+    @Column(name = "unique_name")
+    private String uniqueName;
+
+    @Column(name = "saved_path")
+    private String savedPath;
+
+    @Column(name = "file_type")
+    private String fileType;
+
+    @Column(name = "file_size")
+    private Long fileSize;
+
+    @Column(name = "file_order")
+    private Integer fileOrder;
+
+    @Column(name = "uploaded_at")
+    private LocalDateTime uploadedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.uploadedAt = this.uploadedAt == null ? LocalDateTime.now() : this.uploadedAt;
+    }
+}

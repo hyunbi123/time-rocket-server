@@ -1,7 +1,7 @@
 package com.melly.timerocketserver.global.security;
 
-import com.melly.timerocketserver.domain.entity.Status;
-import com.melly.timerocketserver.domain.entity.UserEntity;
+import com.melly.timerocketserver.domain.user.entity.Status;
+import com.melly.timerocketserver.domain.user.entity.UserEntity;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

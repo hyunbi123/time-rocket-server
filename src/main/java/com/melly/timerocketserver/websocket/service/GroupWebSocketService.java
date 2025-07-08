@@ -1,9 +1,7 @@
 package com.melly.timerocketserver.websocket.service;
 
-import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
-import com.melly.timerocketserver.domain.service.GroupService;
-import com.melly.timerocketserver.domain.service.UserService;
-import com.melly.timerocketserver.websocket.dto.response.JoinedMemberPayload;
+import com.melly.timerocketserver.domain.group.service.GroupService;
+import com.melly.timerocketserver.domain.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
