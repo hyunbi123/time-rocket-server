@@ -1,5 +1,6 @@
 package com.melly.timerocketserver.domain.entity;
 
+import com.melly.timerocketserver.domain2.rocket.entity.RocketFileEntity;
 import com.melly.timerocketserver.domain2.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
