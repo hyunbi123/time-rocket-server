@@ -1,7 +1,7 @@
 package com.melly.timerocketserver.global.security;
 
-import com.melly.timerocketserver.domain2.user.entity.UserEntity;
-import com.melly.timerocketserver.domain2.user.repository.UserRepository;
+import com.melly.timerocketserver.domain.user.entity.UserEntity;
+import com.melly.timerocketserver.domain.user.repository.UserRepository;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
 import com.melly.timerocketserver.global.jwt.JwtUtil;
 import com.melly.timerocketserver.global.jwt.RefreshEntity;

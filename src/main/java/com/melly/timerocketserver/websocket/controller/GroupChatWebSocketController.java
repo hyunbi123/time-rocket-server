@@ -1,6 +1,5 @@
 package com.melly.timerocketserver.websocket.controller;
 
-import com.melly.timerocketserver.domain.dto.response.GroupMemberListResponse;
 import com.melly.timerocketserver.global.common.ResponseController;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
 import com.melly.timerocketserver.websocket.dto.GroupChatNotificationDto;
@@ -16,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-import java.util.Map;
 
 // 웹소켓 컨트롤러에서는 반드시 Principal 파라미터로 유저 정보 받아야 함
 // SecurityContextHolder.getContext().getAuthentication() 는 웹소켓에서는 동작을 보장하지 않음

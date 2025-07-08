@@ -1,8 +1,8 @@
 package com.melly.timerocketserver.global.security;
 
-import com.melly.timerocketserver.domain2.user.entity.UserEntity;
+import com.melly.timerocketserver.domain.user.entity.UserEntity;
 import com.melly.timerocketserver.global.exception.UserNotFoundException;
-import com.melly.timerocketserver.domain2.user.service.UserService;
+import com.melly.timerocketserver.domain.user.service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

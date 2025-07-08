@@ -1,7 +1,7 @@
 package com.melly.timerocketserver.websocket;
 
-import com.melly.timerocketserver.domain2.user.entity.UserEntity;
-import com.melly.timerocketserver.domain2.user.service.UserService;
+import com.melly.timerocketserver.domain.user.entity.UserEntity;
+import com.melly.timerocketserver.domain.user.service.UserService;
 import com.melly.timerocketserver.global.jwt.JwtUtil;
 import com.melly.timerocketserver.global.security.CustomUserDetails;
 import lombok.extern.slf4j.Slf4j;
