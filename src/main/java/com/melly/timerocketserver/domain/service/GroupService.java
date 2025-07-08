@@ -4,6 +4,8 @@ import com.melly.timerocketserver.domain.dto.request.*;
 import com.melly.timerocketserver.domain.dto.response.*;
 import com.melly.timerocketserver.domain.entity.*;
 import com.melly.timerocketserver.domain.repository.*;
+import com.melly.timerocketserver.domain2.user.entity.UserEntity;
+import com.melly.timerocketserver.domain2.user.repository.UserRepository;
 import com.melly.timerocketserver.global.exception.GroupConflictException;
 import com.melly.timerocketserver.global.exception.GroupNotFoundException;
 import com.melly.timerocketserver.global.exception.GroupThemeNotFoundException;
