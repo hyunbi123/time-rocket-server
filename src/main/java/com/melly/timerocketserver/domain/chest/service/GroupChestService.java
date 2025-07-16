@@ -134,6 +134,7 @@ public class GroupChestService {
                 .groupRocketId(entity.getGroupRocket().getGroupRocketId())
                 .groupId(entity.getGroup().getGroupId())
                 .userId(entity.getUser().getUserId())
+                .nickname(entity.getUser().getNickname())
                 .content(entity.getContent())
                 .isReady(entity.getReady())
                 .isDeleted(entity.getIsDeleted())
