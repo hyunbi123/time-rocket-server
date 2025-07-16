@@ -14,6 +14,7 @@ public class GroupRocketContentResponse {
     private Long groupRocketId;
     private Long groupId;
     private Long userId;
+    private String nickname;
     private String content;
     private Boolean isReady;
     private Boolean isDeleted;
